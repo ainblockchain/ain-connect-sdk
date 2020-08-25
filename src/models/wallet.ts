@@ -32,18 +32,20 @@ export default class Wallet {
   }
 
   public signaturePayload(payload: object) {
+    // Remove undefined data
+    const data = JSON.parse(JSON.stringify(payload));
     const fields: ainUtil.Field[] = [];
-    Object.keys(payload).forEach((name) => {
+    Object.keys(data).forEach((name) => {
       fields.push({
         name,
         default: Buffer.from([]),
       });
     });
     const signature = ainUtil.ecSignMessage(
-      ainUtil.serialize(payload, fields), ainUtil.toBuffer(this.secretKey),
+      ainUtil.serialize(data, fields), ainUtil.toBuffer(this.secretKey),
     );
     return {
-      payload,
+      payload: data,
       signature,
       fields,
       address: this.address,
