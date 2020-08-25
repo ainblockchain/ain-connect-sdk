@@ -7,7 +7,7 @@ export const enum STATUS_CODE {
 export class CustomError extends Error {
   static MESSAGE = {
     0: 'success',
-    1: 'It is not Invalid Parameter',
+    1: 'It is invalid Parameter',
     500: 'It is Unexpected Error',
   };
 
