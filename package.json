@@ -48,6 +48,10 @@
   },
   "dependencies": {
     "@ainblockchain/ain-util": "^1.1.5",
-    "firebase": "^7.19.0"
+    "@types/bip39": "^3.0.0",
+    "@types/hdkey": "^0.7.1",
+    "bip39": "^3.0.2",
+    "firebase": "^7.19.0",
+    "hdkey": "^2.0.1"
   }
 }
