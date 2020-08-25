@@ -1,6 +1,7 @@
 import Wallet from './wallet';
 import Firebase, { EnvType } from '../common/firebase';
 import * as types from '../common/types';
+import * as error from '../common/error';
 
 export default class Worker {
   private wallet: Wallet;
@@ -46,7 +47,7 @@ export default class Worker {
               await this.firebase.getInstance().functions().httpsCallable('sendTransaction')(reqMassage);
             } else {
               const resultData = this.wallet.signaturePayload({
-                statusCode: -1,
+                statusCode: error.STATUS_CODE.invalidParams,
               });
               const reqMassage = {
                 ...resultData,
