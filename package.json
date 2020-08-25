@@ -18,7 +18,7 @@
   ],
   "scripts": {
     "test": "jest",
-    "build": "tsc -p",
+    "build": "./build.sh",
     "start": "tsc && node dist/index.js serve",
     "lint": "eslint src/*.ts src/**/*.ts src/**/**/*.ts src/**/**/**/*.ts",
     "lint:fix": "eslint --fix src/*.ts src/**/*.ts src/**/**/*.ts src/**/**/**/*.ts"
@@ -31,7 +31,6 @@
   ],
   "devDependencies": {
     "@types/jest": "^26.0.7",
-    "@types/n-readlines": "^1.0.1",
     "@typescript-eslint/eslint-plugin": "^2.22.0",
     "@typescript-eslint/parser": "^2.22.0",
     "eslint": "^6.8.0",
@@ -39,9 +38,7 @@
     "eslint-plugin-import": "^2.20.1",
     "husky": "^4.2.5",
     "jest": "^24.8.0",
-    "nodemon": "^2.0.3",
     "ts-jest": "^24.0.2",
-    "ts-node": "^8.10.2",
     "typescript": "^3.9.7"
   },
   "husky": {

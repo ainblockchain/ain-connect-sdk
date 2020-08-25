@@ -8,6 +8,7 @@
     "sourceMap": true,
     "allowJs": false,
     "moduleResolution": "node",
+    "declaration": true,
     "rootDir": "src",
     "forceConsistentCasingInFileNames": true,
     "noImplicitReturns": true,
@@ -28,7 +29,6 @@
     "dist",
     "scripts",
     "jest",
-    "src/setupTests.ts",
     "deploy",
     "docker"
   ]
