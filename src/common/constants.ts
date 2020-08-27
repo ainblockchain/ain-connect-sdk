@@ -19,3 +19,7 @@ export const STAGING_FIREBASE_CONFIG = {
   appId: '1:799118803554:web:508677f48e6bdf5e5b473b',
   measurementId: 'G-9DZCTCN5FH',
 };
+
+export const MAINNET_PROVIDER_URL = 'http://node.ainetwork.ai:8080';
+
+export const TESTNET_PROVIDER_URL = 'http://node.ainetwork.ai:8080';

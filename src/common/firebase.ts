@@ -1,4 +1,4 @@
-import * as firebase from 'firebase/app';
+import firebase from 'firebase/app';
 import 'firebase/auth';
 import 'firebase/database';
 import 'firebase/functions';
@@ -14,7 +14,15 @@ export default class Firebase {
     this.instance = firebase.initializeApp(firebaseConfig);
   }
 
-  public getInstance() {
+  public getInstance(): firebase.app.App {
     return this.instance;
+  }
+
+  public getFunctions(): firebase.functions.Functions {
+    return this.instance.functions();
+  }
+
+  public getDatabase(): firebase.database.Database {
+    return this.instance.database();
   }
 }
