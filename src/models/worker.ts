@@ -20,7 +20,16 @@ export default class Worker {
     this.firebase = new Firebase(env);
   }
 
-  public registerJobMethod(methods: {[type: string]: Function}) {
+  public async sendResponse(payload: object, dbpath: string) {
+    const data = this.wallet.signaturePayload(payload);
+    const reqMassage = {
+      ...data,
+      dbpath,
+    };
+    await this.firebase.getInstance().functions().httpsCallable('sendTransaction')(reqMassage);
+  }
+
+  public listenReqeust(methods: {[type: string]: Function}) {
     this.methods = methods;
     const rootRef = this.firebase.getInstance().database()
       .ref(`/worker/${this.wallet.getAddress()}`);
@@ -30,36 +39,27 @@ export default class Worker {
 
         const requestRef = this.firebase.getInstance().database()
           .ref(`/worker/${this.wallet.getAddress()}/${clusterName}/request_queue`);
+        this.listenDict[clusterName] = {
+          requestRef,
+        };
+
         requestRef
           .on('child_added', async (requestData) => {
             const requstId = requestData.key as string;
             const requestValue = requestData.val();
+            const dbpath = `/worker/${this.wallet.getAddress()}/${clusterName}/request_queue/${requstId}/response`;
             if (requestValue.response) {
               return;
             }
             if (this.methods[requestValue.type]) {
-              const result = await this.methods[requestValue.type]();
-              const resultData = this.wallet.signaturePayload(result);
-              const reqMassage = {
-                ...resultData,
-                dbpath: `/worker/${this.wallet.getAddress()}/${clusterName}/request_queue/${requstId}/response`,
-              };
-              await this.firebase.getInstance().functions().httpsCallable('sendTransaction')(reqMassage);
+              const result = await this.methods[requestValue.type](requestValue);
+              await this.sendResponse(result, dbpath);
             } else {
-              const resultData = this.wallet.signaturePayload({
+              await this.sendResponse({
                 statusCode: error.STATUS_CODE.invalidParams,
-              });
-              const reqMassage = {
-                ...resultData,
-                dbpath: `/worker/${this.wallet.getAddress()}/${clusterName}/request_queue/${requstId}/response`,
-              };
-              await this.firebase.getInstance().functions().httpsCallable('sendTransaction')(reqMassage);
+              }, dbpath);
             }
           });
-
-        this.listenDict[clusterName] = {
-          requestRef,
-        };
       });
 
     rootRef
@@ -73,28 +73,14 @@ export default class Worker {
   }
 
   public async registerCluster(option: types.ClusterRegisterParams) {
-    const data = this.wallet.signaturePayload(option);
-    const reqMassage = {
-      ...data,
-      dbpath: `/worker/${this.wallet.getAddress()}/${option.clusterName}/info`,
-    };
-    const result = await this.firebase.getInstance().functions().httpsCallable('sendTransaction')(reqMassage);
-
-    return result;
+    await this.sendResponse(option, `/worker/${this.wallet.getAddress()}/${option.clusterName}/info`);
   }
 
   public async updateClusterInfo(clusterName: string, allowAdress?: string[], price?: number) {
-    const data = this.wallet.signaturePayload({
+    await this.sendResponse({
       clusterName,
       allowAdress,
       price,
-    });
-    const reqMassage = {
-      ...data,
-      dbpath: `/worker/${this.wallet.getAddress()}/${clusterName}/info`,
-    };
-    const result = await this.firebase.getInstance().functions().httpsCallable('sendTransaction')(reqMassage);
-
-    return result;
+    }, `/worker/${this.wallet.getAddress()}/${clusterName}/info`);
   }
 }
