@@ -10,8 +10,8 @@ export default class Worker {
 
   private listenMethodList: types.workerListenMethod;
 
-  constructor(mnumonic: string, env: EnvType) {
-    this.wallet = new Wallet(mnumonic);
+  constructor(mnemonic: string, env: EnvType) {
+    this.wallet = new Wallet(mnemonic);
     this.firebase = new Firebase(env);
   }
 
@@ -27,11 +27,12 @@ export default class Worker {
     this.firebase.getInstance().database()
       .ref(dbpath)
       .on('child_changed', (data) => {
-        callback(data.val() as types.ClusterRegisterParams);
+        const { key } = data;
+        callback(key, data.val());
       });
   }
 
-  public async sendResponse(payload: object, dbpath: string) {
+  public async writePayload(payload: object, dbpath: string) {
     const data = this.wallet.signaturePayload(payload);
     const reqMassage = {
       ...data,
@@ -54,9 +55,9 @@ export default class Worker {
         }
         if (this.listenMethodList[requestValue.type]) {
           const result = await this.listenMethodList[methodType](requestValue);
-          await this.sendResponse(result, dbpath);
+          await this.writePayload(result, dbpath);
         } else {
-          await this.sendResponse({
+          await this.writePayload({
             statusCode: error.STATUS_CODE.invalidParams,
           }, dbpath);
         }
@@ -64,11 +65,11 @@ export default class Worker {
   }
 
   public async registerCluster(option: types.ClusterRegisterParams) {
-    await this.sendResponse(option, `/worker/${this.wallet.getAddress()}/${option.clusterName}/info`);
+    await this.writePayload(option, `/worker/${this.wallet.getAddress()}/${option.clusterName}/info`);
   }
 
   public async updateClusterInfo(clusterName: string, allowAdress?: string[], price?: number) {
-    await this.sendResponse({
+    await this.writePayload({
       clusterName,
       allowAdress,
       price,
