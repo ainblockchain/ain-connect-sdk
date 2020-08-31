@@ -40,6 +40,9 @@ export default class Wallet {
         name,
         default: Buffer.from([]),
       });
+      if (typeof data[name] === 'object') {
+        data[name] = JSON.stringify(data[name]);
+      }
     });
     const signature = ainUtil.ecSignMessage(
       ainUtil.serialize(data, fields), ainUtil.toBuffer(this.secretKey),

@@ -19,7 +19,11 @@ export default class Worker {
     const data = await this.firebase.getInstance().database()
       .ref(`/worker/${this.getAddress()}/${clusterName}/info`)
       .once('value');
-    return data;
+
+    const result = data.val();
+    result.endpointConfig = JSON.parse(result.endpointConfig);
+    result.nodePool = JSON.parse(result.nodePool);
+    return result;
   }
 
   public async listenClusterInfo(clusterName: string, callback: Function) {
@@ -28,7 +32,11 @@ export default class Worker {
       .ref(dbpath)
       .on('child_changed', (data) => {
         const { key } = data;
-        callback(key, data.val());
+        let value = data.val();
+        if (key === 'endpointConfig' || key === 'nodePool') {
+          value = JSON.parse(value);
+        }
+        callback(key, value);
       });
   }
 
