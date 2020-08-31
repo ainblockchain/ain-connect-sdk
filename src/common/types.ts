@@ -1,3 +1,9 @@
+export type ListenMethodList = 'createResource' | 'deleteResource' | 'getResourceStatus' | 'setResourceConfig';
+
+export type workerListenMethod = {
+  [type in ListenMethodList]: Function;
+};
+
 export type ClusterRegisterParams = {
   clusterName: string;
   clusterTitle: string;
