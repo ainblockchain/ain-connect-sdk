@@ -21,33 +21,40 @@ export default class Client {
     this.sendTx = this.firebase.getFunctions().httpsCallable('sendTransaction');
   }
 
-  private async sendRequest(type: string, params: any, callback: any) {
+  private async awaitResonse(refPath: string) {
+    return new Promise((resolve, reject) => {
+      this.firebase.getDatabase().ref(`${refPath}/response`)
+        .on('value', (snapshot) => {
+          this.firebase.getDatabase().ref(`${refPath}/response`).off();
+          resolve(snapshot.val());
+        });
+    });
+  }
+
+  private async sendRequest(type: string, params: any) {
     const data = this.wallet.signaturePayload(params);
     const { clusterAddress, clusterName } = params.payload;
     const requestId = getRandomRequestId();
     const refPath = `/worker/${clusterAddress}/${clusterName}/request_queue/${requestId}`;
 
     await this.sendTx({ type, dbpath: refPath, ...data });
-    this.firebase.getDatabase().ref(`${refPath}/response`)
-      .on('value', (snapshot) => {
-        this.firebase.getDatabase().ref(`${refPath}/response`).off();
-        callback(snapshot.val());
-      });
+    const res = await this.awaitResonse(refPath);
+    return res;
   }
 
-  public async createResource(params: any, callback: any) {
-    this.sendRequest('createResource', params, callback);
+  public async createResource(params: any) {
+    this.sendRequest('createResource', params);
   }
 
-  public async deleteResource(params: any, callback: any) {
-    this.sendRequest('deleteResource', params, callback);
+  public async deleteResource(params: any) {
+    this.sendRequest('deleteResource', params);
   }
 
-  public async getResourceStatus(params: any, callback: any) {
-    this.sendRequest('getResourceStatus', params, callback);
+  public async getResourceStatus(params: any) {
+    this.sendRequest('getResourceStatus', params);
   }
 
-  public async setResourceConfig(params: any, callback: any) {
-    this.sendRequest('setResourceConfig', params, callback);
+  public async setResourceConfig(params: any) {
+    this.sendRequest('setResourceConfig', params);
   }
 }
