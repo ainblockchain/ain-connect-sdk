@@ -1,4 +1,5 @@
-export type ListenMethodList = 'createResource' | 'deleteResource' | 'getResourceStatus' | 'setResourceConfig';
+export type ListenMethodList = 'deploy' | 'redeploy' | 'undeploy'
+ | 'createStorage' | 'deleteStorage' | 'getContainerInfo' | 'getClusterInfo' | 'getClusterList';
 
 export type workerListenMethod = {
   [type in ListenMethodList]: Function;
