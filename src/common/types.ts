@@ -33,7 +33,7 @@ export type ClusterRegisterParams = {
 }
 
 export type CreateResourceParams = {
-  clusterAddress: string;
+  workerAddress: string;
   clusterName: string;
   type: 'deploy' | 'redeploy' | 'storage';
   deployTemplateName?: string
@@ -79,14 +79,14 @@ export type CreateResourceReturn = {
 }
 
 export type DeleteResourceParams = {
-  clusterAddress: string;
+  workerAddress: string;
   clusterName: string;
   type: 'deploy' | 'storage';
   id: string;
 }
 
 export type GetResourceStatusParams = {
-  clusterAddress: string;
+  workerAddress: string;
   clusterName: string;
   type: 'deploy' | 'storage';
   id: string;
@@ -104,7 +104,7 @@ export type GetResourceStatusReturn = {
 }
 
 export type SetResourceConfigParams = {
-  clusterAddress: string;
+  workerAddress: string;
   clusterName: string;
   containerId: string;
   config: {
@@ -117,7 +117,6 @@ export type SetResourceConfigParams = {
 export type GetClusterInfoParams = {
   workerAddress?: string;
   workerName?: string;
-  clusterAddress?: string
   clusterName?: string
   option: {
     isSingleNode: boolean
