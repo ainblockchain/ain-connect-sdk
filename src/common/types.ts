@@ -6,6 +6,7 @@ export type workerListenMethod = {
 };
 
 export type ClusterRegisterParams = {
+  address: string;
   clusterName: string;
   clusterTitle: string;
   clusterDescription: string;
