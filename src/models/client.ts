@@ -21,7 +21,7 @@ export default class Client {
     this.sendTx = this.firebase.getFunctions().httpsCallable('sendTransaction');
   }
 
-  private async awaitResonse(refPath: string) {
+  private async awaitResponse(refPath: string) {
     return new Promise((resolve, reject) => {
       this.firebase.getDatabase().ref(`${refPath}/response`)
         .on('value', (snapshot) => {
@@ -38,23 +38,52 @@ export default class Client {
     const refPath = `/worker/${clusterAddress}/${clusterName}/request_queue/${requestId}`;
 
     await this.sendTx({ type, dbpath: refPath, ...data });
-    const res = await this.awaitResonse(refPath);
+    const res = await this.awaitResponse(refPath);
     return res;
   }
 
-  public async createResource(params: any) {
-    this.sendRequest('createResource', params);
+  public async deploy(params: any) {
+    const res = await this.sendRequest('deploy', params);
+    return res;
   }
 
-  public async deleteResource(params: any) {
-    this.sendRequest('deleteResource', params);
+  public async redeploy(params: any) {
+    const res = await this.sendRequest('redeploy', params);
+    return res;
   }
 
-  public async getResourceStatus(params: any) {
-    this.sendRequest('getResourceStatus', params);
+  public async createStorage(params: any) {
+    const res = await this.sendRequest('createStorage', params);
+    return res;
   }
 
-  public async setResourceConfig(params: any) {
-    this.sendRequest('setResourceConfig', params);
+  public async deleteStorage(params: any) {
+    const res = await this.sendRequest('deleteStorage', params);
+    return res;
+  }
+
+  public async getContainerConfig(params: any) {
+    const res = await this.sendRequest('getContainerConfig', params);
+    return res;
+  }
+
+  public async getClusterInfo(params: any) {
+    const { targetAddress, clusterName } = params;
+    const snap = await this.firebase.getDatabase().ref(`/worker/${targetAddress}/${clusterName}/info`).once('value');
+
+    /* TODO: return empty error */
+    return snap.val();
+  }
+
+  public async getClusterList(params: any) {
+    const list: any[] = [];
+    /* TODO */
+    return list;
+  }
+
+  public async getHistory(params: any) {
+    const historyList: any[] = [];
+    /* TODO */
+    return historyList;
   }
 }
