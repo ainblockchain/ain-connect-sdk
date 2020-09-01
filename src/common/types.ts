@@ -32,10 +32,9 @@ export type ClusterRegisterParams = {
   }
 }
 
-export type CreateResourceParams = {
-  workerAddress: string;
+export type DeployParams = {
+  targetAddress: string;
   clusterName: string;
-  type: 'deploy' | 'redeploy' | 'storage';
   deployTemplateName?: string
   selectClusterOption?: {
     isSingleNode: boolean;
@@ -71,63 +70,92 @@ export type CreateResourceParams = {
   runningTimeout?: number;
 }
 
-export type CreateResourceReturn = {
-  statusCode: number;
-  containerId: string;
-  storageId?: string;
-  endpoint?: string;
-}
-
-export type DeleteResourceParams = {
-  workerAddress: string;
-  clusterName: string;
-  type: 'deploy' | 'storage';
-  id: string;
-}
-
-export type GetResourceStatusParams = {
-  workerAddress: string;
-  clusterName: string;
-  type: 'deploy' | 'storage';
-  id: string;
-}
-
-export type GetResourceStatusReturn = {
+export type DeployReturn = {
   statusCode: number
-  containerInfo?: {
-    containerImage: string
-    port: object;
-    env: object;
-    command: string;
-  }
-  resourceStatus: number;
+  targetAddress: string
+  clusterName: string
+  containerId: string
+  endpoint: string
+  storageId?: string
 }
 
-export type SetResourceConfigParams = {
-  workerAddress: string;
+export type RedeployParams = {
+  statusCode: number;
+  targetAddress: string;
   clusterName: string;
   containerId: string;
-  config: {
+  option?: {
     port?: object;
     replicas?: number;
     env?: object;
   }
 }
 
+export type UndeployParams = {
+  targetAddress: string;
+  clusterName: string;
+  containerId: string;
+}
+
+export type CreateStorageParams = {
+  targetAddress: string;
+  clusterName: string;
+  storagePerGb: number;
+}
+
+export type CreateStorageReturn = {
+  statusCode: number;
+  storageId: string;
+}
+
+export type DeleteStorageParams = {
+  targetAddress: string;
+  clusterName: string;
+  storageId: string;
+}
+
+export type GetContainerInfoParams = {
+  targetAddress: string;
+  clusterName: string;
+  containerId: string;
+}
+
+export type GetContainerInfoReturn = {
+  statusCode: number
+  containerImage: string
+  port: object;
+  env?: object;
+  command?: string;
+  resourceStatus: number;
+}
+
 export type GetClusterInfoParams = {
-  workerAddress?: string;
-  workerName?: string;
-  clusterName?: string
-  option: {
-    isSingleNode: boolean
-    isPrivate: boolean
-    https: boolean
-    istio: boolean
-    hwSpec: {
-      isGpu?: boolean
-      isStorage?: boolean
+  targetAddress: string;
+  clusterName: string;
+}
+
+export type GetClusterInfoReturn = {
+  statusCode: number;
+  clusterInfo: ClusterRegisterParams;
+}
+
+export type GetClusterListParams = {
+  targetAddress?: string;
+  clusterOption?: {
+    isSingleNode: boolean;
+    isPrivate: boolean;
+    https: boolean;
+    istio: boolean;
+    hwSpec?: {
+      isGpu?: boolean;
+      isStorage?: boolean;
     }
   }
+}
+
+export type GetClusterListReturn = {
+  statusCode: number;
+  clusterInfo: ClusterRegisterParams[];
 }
 
 export type GetHistoryParams = {
