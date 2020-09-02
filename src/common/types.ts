@@ -35,8 +35,8 @@ export type ClusterRegisterParams = {
 }
 
 export type DeployParams = {
-  targetAddress: string;
-  clusterName: string;
+  targetAddress?: string;
+  clusterName?: string;
   deployTemplateName?: string
   selectClusterOption?: {
     isSingleNode: boolean;

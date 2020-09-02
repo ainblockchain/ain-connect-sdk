@@ -17,7 +17,7 @@ export default class Worker {
 
   public async getClusterInfo(clusterName: string) {
     const data = await this.firebase.getInstance().database()
-      .ref(`/worker/info/${this.getAddress()}@${clusterName}`)
+      .ref(`/worker/info/${clusterName}@${this.getAddress()}`)
       .once('value');
 
     const result = data.val();
@@ -27,7 +27,7 @@ export default class Worker {
   }
 
   public async listenClusterInfo(clusterName: string, callback: Function) {
-    const dbpath = `/worker/info/${this.getAddress()}@${clusterName}`;
+    const dbpath = `/worker/info/${clusterName}@${this.getAddress()}`;
     this.firebase.getInstance().database()
       .ref(dbpath)
       .on('child_changed', (data) => {
@@ -52,12 +52,12 @@ export default class Worker {
   public listenReqeust(clusterName: string, methods: types.workerListenMethod) {
     this.listenMethodList = methods;
     this.firebase.getInstance().database()
-      .ref(`/worker/request_queue/${this.wallet.getAddress()}@${clusterName}`)
+      .ref(`/worker/request_queue/${clusterName}@${this.wallet.getAddress()}`)
       .on('child_added', async (data) => {
         const requstId = data.key as string;
         const requestValue = data.val();
         const methodType = requestValue.type as types.ListenMethodList;
-        const dbpath = `/worker/request_queue/${this.wallet.getAddress()}@${clusterName}/${requstId}/response`;
+        const dbpath = `/worker/request_queue/${clusterName}@${this.wallet.getAddress()}/${requstId}/response`;
         if (requestValue.response) {
           return;
         }
@@ -73,7 +73,7 @@ export default class Worker {
   }
 
   public async registerCluster(option: types.ClusterRegisterParams) {
-    await this.writePayload(option, `/worker/info/${this.wallet.getAddress()}@${option.clusterName}`);
+    await this.writePayload(option, `/worker/info/${option.clusterName}@${this.wallet.getAddress()}`);
   }
 
   public async updateClusterInfo(clusterName: string, allowAdress?: string[], price?: number) {
@@ -81,7 +81,7 @@ export default class Worker {
       clusterName,
       allowAdress,
       price,
-    }, `/worker/info/${this.wallet.getAddress()}@${clusterName}`);
+    }, `/worker/info/${clusterName}@${this.wallet.getAddress()}`);
   }
 
   public getAddress() {
