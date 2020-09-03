@@ -33,9 +33,9 @@ export default class Client {
 
   private async sendRequest(type: string, params: any) {
     const data = this.wallet.signaturePayload(params);
-    const { clusterAddress, clusterName } = params.payload;
+    const { targetAddress, clusterName } = params.payload;
     const requestId = getRandomRequestId();
-    const refPath = `/worker/${clusterAddress}/${clusterName}/request_queue/${requestId}`;
+    const refPath = `/worker/request_queue/${clusterName}@${targetAddress}/${requestId}`;
 
     await this.sendTx({ type, dbpath: refPath, ...data });
     const res = await this.awaitResponse(refPath);
@@ -67,17 +67,40 @@ export default class Client {
     return res;
   }
 
+  public async execKubeCtl(params: any) {
+    const res = await this.sendRequest('execKubeCtl', params);
+    return res;
+  }
+
   public async getClusterInfo(params: any) {
     const { targetAddress, clusterName } = params;
-    const snap = await this.firebase.getDatabase().ref(`/worker/${targetAddress}/${clusterName}/info`).once('value');
+    const snap = await this.firebase.getDatabase().ref(`/worker/info/${clusterName}@${targetAddress}`).once('value');
 
-    /* TODO: return empty error */
-    return snap.val();
+    if (!snap.exists()) {
+      throw Error('Cluster not exists');
+    } else {
+      return snap.val();
+    }
   }
 
   public async getClusterList(params: any) {
-    const list: any[] = [];
-    /* TODO */
+    let list = [];
+    const refPath = '/worker/info/';
+    if (params.targetAddress) {
+      // filtered by address
+      const snap = await this.firebase.getDatabase().ref(refPath)
+        .orderByChild('address').equalTo(params.targetAddress)
+        .once('value');
+      list = snap.val();
+    } else if (params.clusterOptions) {
+      // TODO: filtered by options
+      const snap = await this.firebase.getDatabase().ref(refPath).once('value');
+      list = snap.val();
+    } else {
+      // no filter
+      const snap = await this.firebase.getDatabase().ref(refPath).once('value');
+      list = snap.val();
+    }
     return list;
   }
 
