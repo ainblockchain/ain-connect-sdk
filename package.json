@@ -47,11 +47,13 @@
     }
   },
   "dependencies": {
+    "@ainblockchain/ain-js": "^1.0.2",
     "@ainblockchain/ain-util": "^1.1.5",
     "@types/bip39": "^3.0.0",
     "@types/hdkey": "^0.7.1",
     "bip39": "^3.0.2",
     "firebase": "^7.19.0",
-    "hdkey": "^2.0.1"
+    "hdkey": "^2.0.1",
+    "nanoid": "^3.1.12"
   }
 }

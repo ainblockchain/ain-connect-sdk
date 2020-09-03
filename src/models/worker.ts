@@ -1,5 +1,5 @@
 import Wallet from './wallet';
-import Firebase, { EnvType } from '../common/firebase';
+import Firebase from '../common/firebase';
 import * as types from '../common/types';
 import * as error from '../common/error';
 
@@ -10,8 +10,8 @@ export default class Worker {
 
   private listenMethodList: types.workerListenMethod;
 
-  constructor(mnemonic: string, env: EnvType) {
-    this.wallet = new Wallet(mnemonic);
+  constructor(mnemonic: string, env: types.EnvType) {
+    this.wallet = new Wallet(mnemonic, env);
     this.firebase = new Firebase(env);
   }
 
@@ -41,7 +41,7 @@ export default class Worker {
   }
 
   public async writePayload(payload: object, dbpath: string) {
-    const data = this.wallet.signaturePayload(payload);
+    const data = this.wallet.signaturePayload(JSON.stringify(payload));
     const reqMassage = {
       ...data,
       dbpath,

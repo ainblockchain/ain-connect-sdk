@@ -1,3 +1,5 @@
+export type EnvType = 'prod' | 'staging';
+
 export type ListenMethodList = 'deploy' | 'redeploy' | 'undeploy'
  | 'createStorage' | 'deleteStorage' | 'getContainerInfo' | 'getClusterInfo' | 'getClusterList';
 

@@ -1,7 +1,10 @@
 import { mnemonicToSeedSync } from 'bip39';
 import * as ainUtil from '@ainblockchain/ain-util';
+import AinJS from '@ainblockchain/ain-js';
+import HDKey from 'hdkey';
 
-const HDKey = require('hdkey');
+import { EnvType } from '../common/types';
+import { MAINNET_PROVIDER_URL, TESTNET_PROVIDER_URL } from '../common/constants';
 
 export default class Wallet {
   private mnemonic: string;
@@ -10,13 +13,16 @@ export default class Wallet {
 
   private address: string;
 
-  constructor(mnemonic: string) {
+  private ainJs: AinJS;
+
+  constructor(mnemonic: string, type: EnvType) {
     const key = HDKey.fromMasterSeed(mnemonicToSeedSync(mnemonic));
     const mainWallet = key.derive("m/44'/412'/0'/0/0"); /* default wallet address for AIN */
 
     this.mnemonic = mnemonic;
     this.secretKey = `0x${mainWallet.privateKey.toString('hex')}`;
     this.address = ainUtil.toChecksumAddress(`0x${ainUtil.pubToAddress(mainWallet.publicKey, true).toString('hex')}`);
+    this.ainJs = new AinJS(type === 'prod' ? MAINNET_PROVIDER_URL : TESTNET_PROVIDER_URL);
   }
 
   public getMnemonic() {
@@ -31,7 +37,11 @@ export default class Wallet {
     return this.address;
   }
 
-  public signaturePayload(payload: object) {
+  public getAinJs() {
+    return this.ainJs;
+  }
+
+  public signaturePayload(payload: string) {
     // Remove undefined data
     const data = JSON.parse(JSON.stringify(payload));
     const fields: ainUtil.Field[] = [];
