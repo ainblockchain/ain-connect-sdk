@@ -4,7 +4,7 @@ import 'firebase/database';
 import 'firebase/functions';
 import * as constants from './constants';
 
-type EnvType = 'prod' | 'staging';
+export type EnvType = 'prod' | 'staging';
 
 export default class Firebase {
   private instance: firebase.app.App;
