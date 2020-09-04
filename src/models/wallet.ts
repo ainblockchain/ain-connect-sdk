@@ -7,6 +7,8 @@ import { EnvType } from '../common/types';
 import { MAINNET_PROVIDER_URL, TESTNET_PROVIDER_URL } from '../common/constants';
 
 export default class Wallet {
+  private wallet: any;
+
   private mnemonic: string;
 
   private secretKey: string;
@@ -17,12 +19,18 @@ export default class Wallet {
 
   constructor(mnemonic: string, type: EnvType) {
     const key = HDKey.fromMasterSeed(mnemonicToSeedSync(mnemonic));
-    const mainWallet = key.derive("m/44'/412'/0'/0/0"); /* default wallet address for AIN */
-
+    this.wallet = key.derive("m/44'/412'/0'/0/0"); /* default wallet address for AIN */
     this.mnemonic = mnemonic;
-    this.secretKey = `0x${mainWallet.privateKey.toString('hex')}`;
-    this.address = ainUtil.toChecksumAddress(`0x${ainUtil.pubToAddress(mainWallet.publicKey, true).toString('hex')}`);
+    this.secretKey = `0x${this.wallet.privateKey.toString('hex')}`;
+    this.address = ainUtil.toChecksumAddress(`0x${ainUtil.pubToAddress(this.wallet.publicKey, true).toString('hex')}`);
+
     this.ainJs = new AinJS(type === 'prod' ? MAINNET_PROVIDER_URL : TESTNET_PROVIDER_URL);
+    this.ainJs.wallet.addFromHDWallet(mnemonic);
+    this.ainJs.wallet.setDefaultAccount(this.address);
+  }
+
+  public getWallet() {
+    return this.wallet;
   }
 
   public getMnemonic() {
