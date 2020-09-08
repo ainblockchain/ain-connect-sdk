@@ -15,7 +15,6 @@ export type endpointConfig = {
 }
 
 export type nodePool = {
-  nodePoolName: string
   hwConfig: {
     gpu: 0 | 1;
     storage: 0 | 1;
@@ -67,9 +66,11 @@ export type ClusterRegisterParams = {
   clusterDescription: string;
   isSingleNode: 0 | 1;
   isPrivate: 0 | 1;
-  allowAddressList?: string[]
+  allowAddressList?: {
+    [address: string]: 0 | 1,
+  };
   endpointConfig: endpointConfig;
-  nodePool: {
+  nodePools: {
     [nodePoolName: string] : nodePool,
   };
 }
