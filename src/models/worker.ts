@@ -40,7 +40,12 @@ export default class Worker {
           return;
         }
         if (this.listenMethodList[requestValue.type]) {
-          const result = await this.listenMethodList[methodType](requestValue);
+          let result;
+          try {
+            result = await this.listenMethodList[methodType](requestValue);
+          } catch (_) {
+            result = { statusCode: error.STATUS_CODE.failedMethod };
+          }
           await this.writePayload(result, dbpath);
         } else {
           await this.writePayload({
@@ -52,16 +57,6 @@ export default class Worker {
 
   public async registerCluster(option: types.ClusterRegisterParams) {
     await this.writePayload(option, `/worker/info/${this.clusterName}@${this.wallet.getAddress()}`);
-  }
-
-  public async updateClusterInfo(
-    nodePools?: { [nodePoolName: string] : types.nodePool },
-    allowAddressList?: { [address: string]: 0 | 1 },
-  ) {
-    await this.writePayload({
-      nodePools,
-      allowAddressList,
-    }, `/worker/info/${this.clusterName}@${this.wallet.getAddress()}`);
   }
 
   public getAddress() {

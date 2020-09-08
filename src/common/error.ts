@@ -1,6 +1,7 @@
 export const enum STATUS_CODE {
   success = '0',
   invalidParams = '1',
+  failedMethod = '2',
   unexpected = '500',
 }
 
@@ -8,6 +9,7 @@ export class CustomError extends Error {
   static MESSAGE = {
     0: 'success',
     1: 'It is invalid Parameter',
+    2: 'It falied to call method',
     500: 'It is Unexpected Error',
   };
 
