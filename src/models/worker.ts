@@ -15,31 +15,6 @@ export default class Worker {
     this.firebase = new Firebase(env);
   }
 
-  public async getClusterInfo(clusterName: string) {
-    const data = await this.firebase.getInstance().database()
-      .ref(`/worker/info/${clusterName}@${this.getAddress()}`)
-      .once('value');
-
-    const result = data.val();
-    result.endpointConfig = JSON.parse(result.endpointConfig);
-    result.nodePool = JSON.parse(result.nodePool);
-    return result;
-  }
-
-  public async listenClusterInfo(clusterName: string, callback: Function) {
-    const dbpath = `/worker/info/${clusterName}@${this.getAddress()}`;
-    this.firebase.getInstance().database()
-      .ref(dbpath)
-      .on('child_changed', (data) => {
-        const { key } = data;
-        let value = data.val();
-        if (key === 'endpointConfig' || key === 'nodePool') {
-          value = JSON.parse(value);
-        }
-        callback(key, value);
-      });
-  }
-
   public async writePayload(payload: object, dbpath: string) {
     const data = this.wallet.signaturePayload(JSON.stringify(payload));
     const reqMassage = {
@@ -49,7 +24,7 @@ export default class Worker {
     await this.firebase.getInstance().functions().httpsCallable('sendTransaction')(reqMassage);
   }
 
-  public listenReqeust(clusterName: string, methods: types.workerListenMethod) {
+  public listenRequest(clusterName: string, methods: types.workerListenMethod) {
     this.listenMethodList = methods;
     this.firebase.getInstance().database()
       .ref(`/worker/request_queue/${clusterName}@${this.wallet.getAddress()}`)
@@ -76,12 +51,20 @@ export default class Worker {
     await this.writePayload(option, `/worker/info/${option.clusterName}@${this.wallet.getAddress()}`);
   }
 
-  public async updateClusterInfo(clusterName: string, allowAdress?: string[], price?: number) {
+  public async updateClusterInfo(
+    clusterName: string, allowAdress?: string[], price?: number,
+    nodePool?: {nodePollName: string, nodePollInfo: types.nodePool},
+  ) {
     await this.writePayload({
       clusterName,
       allowAdress,
       price,
     }, `/worker/info/${clusterName}@${this.wallet.getAddress()}`);
+
+    if (nodePool) {
+      await this.writePayload(nodePool.nodePollInfo,
+        `/worker/info/${clusterName}@${this.wallet.getAddress()}/nodePool/${nodePool?.nodePollName}`);
+    }
   }
 
   public getAddress() {
