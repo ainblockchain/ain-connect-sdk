@@ -64,7 +64,7 @@ export type ClusterRegisterParams = {
   clusterName: string;
   clusterTitle: string;
   clusterDescription: string;
-  isSingleNode: 0 | 1;
+  clusterType: 'k8s' | 'docker';
   isPrivate: 0 | 1;
   allowAddressList?: {
     [address: string]: 0 | 1,
