@@ -42,7 +42,7 @@ export default class Worker {
         if (this.listenMethodList[methodType]) {
           let result;
           try {
-            result = await this.listenMethodList[methodType](value.address, value.params);
+            result = await this.listenMethodList[methodType](value.address, requstId, value.params);
           } catch (_) {
             result = { statusCode: error.STATUS_CODE.failedMethod };
           }
