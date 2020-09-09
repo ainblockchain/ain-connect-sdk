@@ -32,12 +32,13 @@ export default class Client {
   }
 
   private async sendRequest(type: string, params: any) {
-    const data = this.wallet.signaturePayload(JSON.stringify(params));
-    const { targetAddress, clusterName } = params.payload;
+    const payload = { type, payload: JSON.stringify(params) };
+    const data = this.wallet.signaturePayload(payload);
+    const { targetAddress, clusterName } = params;
     const requestId = getRandomRequestId();
     const refPath = `/worker/request_queue/${clusterName}@${targetAddress}/${requestId}`;
 
-    await this.sendTx({ type, dbpath: refPath, ...data });
+    await this.sendTx({ dbpath: refPath, ...data });
     const res = await this.awaitResponse(refPath);
     return res;
   }

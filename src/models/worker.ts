@@ -41,7 +41,9 @@ export default class Worker {
   }
 
   public async writePayload(payload: object, dbpath: string) {
-    const data = this.wallet.signaturePayload(JSON.stringify(payload));
+    const data = this.wallet.signaturePayload({
+      payload: JSON.stringify(payload),
+    });
     const reqMassage = {
       ...data,
       dbpath,
