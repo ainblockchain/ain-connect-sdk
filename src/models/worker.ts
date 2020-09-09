@@ -33,16 +33,16 @@ export default class Worker {
       .ref(`/worker/request_queue/${this.clusterName}@${this.wallet.getAddress()}`)
       .on('child_added', async (data) => {
         const requstId = data.key as string;
-        const requestValue = data.val();
-        const methodType = requestValue.type as types.ListenMethodList;
+        const value = data.val();
+        const methodType = value.payload.type as types.ListenMethodList;
         const dbpath = `/worker/request_queue/${this.clusterName}@${this.wallet.getAddress()}/${requstId}/response`;
-        if (requestValue.response) {
+        if (value.response) {
           return;
         }
-        if (this.listenMethodList[requestValue.type]) {
+        if (this.listenMethodList[methodType]) {
           let result;
           try {
-            result = await this.listenMethodList[methodType](requestValue);
+            result = await this.listenMethodList[methodType](value.address, value.params);
           } catch (_) {
             result = { statusCode: error.STATUS_CODE.failedMethod };
           }
