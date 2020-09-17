@@ -1,7 +1,9 @@
 export type EnvType = 'prod' | 'staging';
 
 export type ListenMethodList = 'deploy' | 'redeploy' | 'undeploy'
- | 'createStorage' | 'deleteStorage' | 'getContainerInfo';
+ | 'createNamespace' | 'deleteNamespace'
+ | 'createStorage' | 'deleteStorage'
+ | 'getContainerInfo' | 'getClusterInfo';
 
 export type workerListenMethod = {
   [type in ListenMethodList]: Function;
@@ -94,9 +96,9 @@ export type DeployReturn = {
 }
 
 export type RedeployParams = {
-  statusCode: number;
   targetAddress: string;
   clusterName: string;
+  namespaceId: string;
   containerId: string;
   option?: {
     port?: object;
@@ -108,12 +110,25 @@ export type RedeployParams = {
 export type UndeployParams = {
   targetAddress: string;
   clusterName: string;
+  namespaceId: string;
   containerId: string;
+}
+
+export type CreateNamespaceParams = {
+  targetAddress: string;
+  clusterName: string;
+}
+
+export type DeleteNamespaceParams = {
+  targetAddress: string;
+  clusterName: string;
+  namespaceId: string;
 }
 
 export type CreateStorageParams = {
   targetAddress: string;
   clusterName: string;
+  namespaceId: string;
   storagePerGb: number;
 }
 
@@ -125,6 +140,7 @@ export type CreateStorageReturn = {
 export type DeleteStorageParams = {
   targetAddress: string;
   clusterName: string;
+  namespaceId: string;
   storageId: string;
 }
 
