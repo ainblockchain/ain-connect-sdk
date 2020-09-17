@@ -1,77 +1,87 @@
 export type EnvType = 'prod' | 'staging';
 
 export type ListenMethodList = 'deploy' | 'redeploy' | 'undeploy'
- | 'createStorage' | 'deleteStorage' | 'getContainerInfo' | 'getClusterInfo' | 'getClusterList';
+ | 'createStorage' | 'deleteStorage' | 'getContainerInfo';
 
 export type workerListenMethod = {
   [type in ListenMethodList]: Function;
 };
+
+export type endpointConfig = {
+  https: 0 | 1;
+  domainName?: string
+  ip?: string
+  istio: 0 | 1;
+}
+
+export type nodePool = {
+  hwConfig: {
+    gpu: 0 | 1;
+    storage: 0 | 1;
+  }
+  priceConfig: {
+    cpuPerCore: number;
+    memoryPerGb: number;
+    gpu: number;
+    storagePerGb: number;
+  }
+}
+
+export type selectClusterOption = {
+  isSingleNode: boolean;
+  isPrivate: boolean;
+  https: boolean;
+  istio: boolean;
+  hwSpec: {
+    isGpu?: boolean;
+    isStorage?: boolean;
+  };
+}
+
+export type containerInfo = {
+  imageName: string;
+  nodePoolName?: string;
+  storageId?: string;
+  imageRegistryLoginInfo?: {
+    url: string;
+    id: string;
+    pw: string;
+  };
+  hwSpec: {
+    cpuPerCore: number;
+    memoryPerGb: number;
+    gpu: number;
+    storagePerGb?: number;
+  }
+  replicas?: number;
+  command?: string;
+  env?: object;
+  port: object;
+}
 
 export type ClusterRegisterParams = {
   address: string;
   clusterName: string;
   clusterTitle: string;
   clusterDescription: string;
-  isSingleNode: 0 | 1;
+  clusterType: 'k8s' | 'docker';
   isPrivate: 0 | 1;
-  allowAddressList?: string[]
-  endpointConfig: {
-    https: 0 | 1;
-    domainName?: string
-    ip?: string
-    istio: 0 | 1;
-  }
-  nodePool: {
-    nodePoolName: string
-    hwConfig: {
-      gpu: 0 | 1;
-      storage: 0 | 1;
-    }
-    priceConfig: {
-      cpuPerCore: number;
-      memoryPerGb: number;
-      gpu: number;
-      storagePerGb: number;
-    }
-  }
+  allowAddressList?: {
+    [address: string]: 0 | 1,
+  };
+  endpointConfig: endpointConfig;
+  nodePools: {
+    [nodePoolName: string] : nodePool,
+  };
 }
 
 export type DeployParams = {
   targetAddress?: string;
   clusterName?: string;
   deployTemplateName?: string
-  selectClusterOption?: {
-    isSingleNode: boolean;
-    isPrivate: boolean;
-    https: boolean;
-    istio: boolean;
-    hwSpec: {
-      isGpu?: boolean;
-      isStorage?: boolean;
-    };
-  }
-  containerInfo: {
-    imageName: string;
-    nodePoolName?: string;
-    storageId?: string;
-    imageRegistryLoginInfo?: {
-      url: string;
-      id: string;
-      pw: string;
-    };
-    hwSpec: {
-      cpuPerCore: number;
-      memoryPerGb: number;
-      gpu: number;
-      storagePerGb?: number;
-    }
-    replicas?: number;
-    command?: string;
-    env?: object;
-    port: object;
-  }
+  selectClusterOption?: selectClusterOption;
+  containerInfo: containerInfo;
   requestTimeout?: number;
-  runningTimeout?: number;
 }
 
 export type DeployReturn = {
@@ -145,16 +155,7 @@ export type GetClusterInfoReturn = {
 
 export type GetClusterListParams = {
   targetAddress?: string;
-  clusterOption?: {
-    isSingleNode: boolean;
-    isPrivate: boolean;
-    https: boolean;
-    istio: boolean;
-    hwSpec?: {
-      isGpu?: boolean;
-      isStorage?: boolean;
-    }
-  }
+  clusterOption?: selectClusterOption;
 }
 
 export type GetClusterListReturn = {
