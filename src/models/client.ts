@@ -53,6 +53,21 @@ export default class Client {
     return res;
   }
 
+  public async undeploy(params: types.UndeployParams) {
+    const res = await this.sendRequest('undeploy', params);
+    return res;
+  }
+
+  public async createNamespace(params: types.CreateStorageParams) {
+    const res = await this.sendRequest('createNamespace', params);
+    return res;
+  }
+
+  public async deleteNamespace(params: types.DeleteStorageParams) {
+    const res = await this.sendRequest('deleteNamespace', params);
+    return res;
+  }
+
   public async createStorage(params: types.CreateStorageParams) {
     const res = await this.sendRequest('createStorage', params);
     return res;
@@ -63,8 +78,8 @@ export default class Client {
     return res;
   }
 
-  public async getContainerConfig(params: types.GetContainerInfoParams) {
-    const res = await this.sendRequest('getContainerConfig', params);
+  public async getContainerInfo(params: types.GetContainerInfoParams) {
+    const res = await this.sendRequest('getContainerInfo', params);
     return res;
   }
 
