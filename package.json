@@ -1,6 +1,6 @@
 {
-  "name": "ain-connect-sdk",
-  "version": "1.0.0",
+  "name": "@aindev/connect-sdk",
+  "version": "0.1.0",
   "description": "SDK for AIN Connect functionality",
   "repository": {
     "type": "git",
