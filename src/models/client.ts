@@ -94,6 +94,26 @@ export default class Client {
     return res;
   }
 
+  /* FTP */
+  public async putStorageToFtp(params: Types.PutStorageToFtpParams)
+    : Promise<Types.RequestReturn<null>> {
+    const res = await this.sendRequest('putStorageToFtp', params);
+    return res;
+  }
+
+  public async getStorageFromFtp(params: Types.GetStorageFromFtpParams)
+    : Promise<Types.RequestReturn<null>> {
+    const res = await this.sendRequest('getStorageFromFtp', params);
+    return res;
+  }
+
+  /* Container Log */
+  public async getContainerLog(params: Types.GetContainerLogParams)
+    : Promise<Types.RequestReturn<Types.GetContainerLogReturn>> {
+    const res = await this.sendRequest('getContainerLog', params);
+    return res;
+  }
+
   public async execKubeCtl(params: any) {
     const res = await this.sendRequest('execKubeCtl', params);
     return res;
