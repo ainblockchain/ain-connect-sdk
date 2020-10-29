@@ -1,6 +1,6 @@
 import Wallet from './wallet';
 import Firebase from '../common/firebase';
-import * as types from '../common/types';
+import * as Types from '../common/types';
 import * as error from '../common/error';
 
 export default class Worker {
@@ -8,14 +8,18 @@ export default class Worker {
 
   private firebase: Firebase;
 
-  private listenMethodList: types.workerListenMethod;
+  private listenMethodList: Types.workerListenMethod;
 
   private clusterName: string
 
-  constructor(mnemonic: string, clusterName: string, env: types.EnvType) {
+  constructor(mnemonic: string, clusterName: string, env: Types.EnvType) {
     this.wallet = new Wallet(mnemonic, env);
     this.clusterName = clusterName;
     this.firebase = new Firebase(env);
+  }
+
+  public getAddress() {
+    return this.wallet.getAddress();
   }
 
   public async writePayload(payload: object, dbpath: string) {
@@ -29,14 +33,14 @@ export default class Worker {
     await this.firebase.getInstance().functions().httpsCallable('sendTransaction')(reqMassage);
   }
 
-  public listenRequest(methods: types.workerListenMethod) {
+  public listenRequest(methods: Types.workerListenMethod) {
     this.listenMethodList = methods;
     this.firebase.getInstance().database()
       .ref(`/worker/request_queue/${this.clusterName}@${this.wallet.getAddress()}`)
       .on('child_added', async (data) => {
         const requstId = data.key as string;
         const value = data.val();
-        const methodType = value.payload.type as types.ListenMethodList;
+        const methodType = value.payload.type as Types.ListenMethodList;
         const dbpath = `/worker/request_queue/${this.clusterName}@${this.wallet.getAddress()}/${requstId}/response`;
         if (value.response) {
           return;
@@ -57,11 +61,37 @@ export default class Worker {
       });
   }
 
-  public async registerCluster(option: types.ClusterRegisterParams) {
-    await this.writePayload(option, `/worker/info/${this.clusterName}@${this.wallet.getAddress()}`);
+  public async deletePath(path: string) {
+    await this.firebase.getInstance().database().ref(path).remove();
   }
 
-  public getAddress() {
-    return this.wallet.getAddress();
+  public async setClusterStatus(status: Types.ClusterStatusParams) {
+    const path = `/worker/info/${status.clusterName}@${this.getAddress()}`;
+    await this.writePayload(status, path);
+  }
+
+  public async deleteClusterStatus(clusterName: string) {
+    await this.deletePath(`/worker/info/${clusterName}@${this.getAddress()}`);
+  }
+
+  public async setPodStatus(status: Types.SetPodStatusParams) {
+    const { clusterName, containerId, podId } = status;
+    const key = `/container/${clusterName}@${this.getAddress()}/${containerId}/${podId}`;
+    await this.writePayload(status.podStatus, key);
+  }
+
+  public async deletePodStatus(clusterName: string, containerId: string, podId: string) {
+    const key = `/container/${clusterName}@${this.getAddress()}/${containerId}/${podId}`;
+    await this.deletePath(key);
+  }
+
+  public async setStorageStatus(status: Types.SetStorageStatusParams) {
+    const key = `/storage/${status.clusterName}@${this.getAddress()}/${status.storageId}`;
+    await this.writePayload(status.storageStatus, key);
+  }
+
+  public async deleteStorageStatus(clusterName: string, storageId: string) {
+    const key = `/storage/${clusterName}@${this.getAddress()}/${storageId}`;
+    await this.deletePath(key);
   }
 }

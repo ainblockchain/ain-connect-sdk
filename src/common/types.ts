@@ -1,195 +1,255 @@
+export interface RedisCallback {
+  (err: Error | null, key: string | null, value: any): void
+}
+
 export type EnvType = 'prod' | 'staging';
+
+export type PodPhaseList = 'Pending' | 'Running' | 'Succeeded' | 'Failed' | 'Unknown';
+export type StorageStatus = 'Available' | 'Bound' | 'Released' | 'Failed';
+
+export type ConditionType = 'Initialized' | 'Ready' | 'ContainersReady' | 'PodScheduled';
 
 export type ListenMethodList = 'deploy' | 'redeploy' | 'undeploy'
  | 'createNamespace' | 'deleteNamespace'
  | 'createStorage' | 'deleteStorage'
- | 'getContainerInfo' | 'getClusterInfo';
+ | 'createSecret';
 
 export type workerListenMethod = {
   [type in ListenMethodList]: Function;
 };
 
-export type endpointConfig = {
-  https: 0 | 1;
-  domainName?: string
-  ip?: string
-  istio: 0 | 1;
+export type NodeInfo = {
+  cpu: number; // m
+  memory: number; // Mi
+  gpu: number;
 }
 
-export type nodePool = {
-  hwConfig: {
-    gpu: 0 | 1;
-    storage: 0 | 1;
-  }
-  priceConfig: {
-    cpuPerCore: number;
-    memoryPerGb: number;
-    gpu: number;
-    storagePerGb: number;
-  }
-}
-
-export type selectClusterOption = {
-  isSingleNode: boolean;
-  isPrivate: boolean;
-  https: boolean;
-  istio: boolean;
-  hwSpec: {
-    isGpu?: boolean;
-    isStorage?: boolean;
-  };
-}
-
-export type containerInfo = {
-  imageName: string;
-  nodePoolName?: string;
-  storageId?: string;
-  imageRegistryLoginInfo?: {
-    url: string;
-    id: string;
-    pw: string;
-  };
-  hwSpec: {
-    cpuPerCore: number;
-    memoryPerGb: number;
-    gpu: number;
-    storagePerGb?: number;
-  }
-  replicas?: number;
-  command?: string;
-  env?: object;
-  port: object;
-}
-
-export type ClusterRegisterParams = {
+/* Types for Worker */
+/* setClusterStatus */
+export type ClusterStatusParams = {
   address: string;
   clusterName: string;
-  clusterTitle: string;
-  clusterDescription: string;
-  clusterType: 'k8s' | 'docker';
-  isPrivate: 0 | 1;
-  allowAddressList?: {
-    [address: string]: 0 | 1,
+  nodePool: {
+    [nodePoolName: string]: {
+      gpuType: string,
+      osImage: string,
+      nodes: {
+        [nodeId: string]: {
+          capacity: NodeInfo,
+          allocatable: NodeInfo,
+        }
+      }
+    }
   };
-  endpointConfig: endpointConfig;
-  nodePools: {
-    [nodePoolName: string] : nodePool,
+}
+
+/* setPodStatus */
+export type PodStatusParams = {
+  podName: string;
+  namespaceId: string;
+  status: {
+    phase: PodPhaseList;
+    message?: string;
+    startTime?:string;
+    condition?: {
+      type: ConditionType;
+      status: boolean;
+      reason?: string;
+      message?: string;
+    }
   };
+}
+export type SetPodStatusParams = {
+  clusterName: string;
+  containerId: string;
+  podId: string;
+  podStatus: PodStatusParams;
+}
+
+/* setStorageStatus */
+export type StorageStatusParams = {
+  status: StorageStatus;
+}
+export type SetStorageStatusParams = {
+  clusterName: string;
+  storageId: string;
+  storageStatus: StorageStatusParams;
+}
+
+/* Types for Client */
+export type RequestReturn<T> = {
+  statusCode: string;
+  result?: T;
+  errMessage?: string;
+  updatedAt: number;
 }
 
 export type DeployParams = {
-  targetAddress?: string;
-  clusterName?: string;
-  deployTemplateName?: string
-  selectClusterOption?: selectClusterOption;
-  containerInfo: containerInfo;
+  clusterName: string;
+  namespaceId: string;
+  deployTemplateName?: string;
+  containerInfo: {
+    imageName: string;
+    nodePoolName: string;
+    storageSpec?: {
+      [storageId: string]: {
+        mountPath: string;
+      }
+    }
+    secretSpec?: {
+      [secretId: string]: {
+        mountPath: string;
+      }
+    }
+    hwSpec: {
+      cpu: number;
+      memory: number;
+      gpu: number;
+    }
+    replicas?: number;
+    command?: string;
+    env?: object;
+    port: number[];
+  }
   requestTimeout?: number;
+  runningTimeout?: number;
 }
 
 export type DeployReturn = {
-  statusCode: number
-  targetAddress: string
-  clusterName: string
-  containerId: string
-  endpoint: string
-  storageId?: string
+  clusterName: string;
+  containerId: string;
+  endpoint: {
+    [post: string]: string
+  };
 }
 
 export type RedeployParams = {
-  targetAddress: string;
   clusterName: string;
   namespaceId: string;
   containerId: string;
   option?: {
-    port?: object;
+    port?: number[];
+    imageName?: string;
     replicas?: number;
     env?: object;
   }
 }
 
 export type UndeployParams = {
-  targetAddress: string;
   clusterName: string;
   namespaceId: string;
   containerId: string;
 }
 
 export type CreateNamespaceParams = {
-  targetAddress: string;
   clusterName: string;
 }
 
+export type CreateNamespaceReturn = {
+  namespaceId: string;
+}
+
 export type DeleteNamespaceParams = {
-  targetAddress: string;
   clusterName: string;
   namespaceId: string;
 }
 
 export type CreateStorageParams = {
-  targetAddress: string;
   clusterName: string;
   namespaceId: string;
-  storagePerGb: number;
+  capacity: number; // Gi
+  isSharedNfs?: {
+    ip: string;
+    basePath: string;
+  }
 }
 
 export type CreateStorageReturn = {
-  statusCode: number;
   storageId: string;
 }
 
 export type DeleteStorageParams = {
-  targetAddress: string;
   clusterName: string;
   namespaceId: string;
   storageId: string;
+  sharedNfs: boolean;
 }
 
-export type GetContainerInfoParams = {
+export type CreateSecretParams = {
+  clusterName: string;
+  namespaceId: string;
+  name: string;
+  type: string;
+  data: {
+    [key: string]: string
+  };
+}
+
+export type PutStorageToFtpParams = {
+  clusterName: string;
+  namespaceId: string;
+  storageId: string;
+  toStorageId: string;
+  timestamp: string;
+}
+
+export type GetStorageFromFtpParams = {
+  clusterName: string;
+  namespaceId: string;
+  storageId: string;
+  timestamp: string;
+}
+
+/* getClusterList */
+export type GetClusterListParams = {
+  targetAddress?: string;
+  nodeInfo?: {
+    cpu: number;
+    memory: number;
+    gpu?: object;
+  }
+}
+export type GetClusterListReturn = {
+  updatedAt: number;
+  address: string;
+  clusterName: string;
+  nodePool: {
+    [nodePoolName: string]: {
+      gpuType: string,
+      osImage: string,
+      nodes: {
+        [nodeId: string]: NodeInfo,
+      }
+    }
+  };
+}
+
+export type StatusGetterReturn<T> = {
+  updatedAt: number;
+  status: T;
+} | null;
+
+/* getClusterStatus */
+export type GetClusterStatusParams = {
+  targetAddress: string;
+  clusterName: string;
+}
+export type GetClusterStatusReturn = ClusterStatusParams;
+
+/* getContainerStatus */
+export type GetContainerStatusParams = {
   targetAddress: string;
   clusterName: string;
   containerId: string;
 }
+export type GetContainerStatusReturn = {
+  [podId: string]: StatusGetterReturn<PodStatusParams>;
+} | null;
 
-export type GetContainerInfoReturn = {
-  statusCode: number
-  containerImage: string
-  port: object;
-  env?: object;
-  command?: string;
-  resourceStatus: number;
-}
-
-export type GetClusterInfoParams = {
+/* getStorageStatus */
+export type GetStorageStatusParams = {
   targetAddress: string;
   clusterName: string;
+  storageId: string;
 }
-
-export type GetClusterInfoReturn = {
-  statusCode: number;
-  clusterInfo: ClusterRegisterParams;
-}
-
-export type GetClusterListParams = {
-  targetAddress?: string;
-  clusterOption?: selectClusterOption;
-}
-
-export type GetClusterListReturn = {
-  statusCode: number;
-  clusterInfo: ClusterRegisterParams[];
-}
-
-export type GetHistoryParams = {
-  address: string;
-}
-
-export type GetHistoryReturn = {
-  createdAt: string;
-  finishedAt: string;
-  requestId: string;
-  clusterName: string;
-  workerAdress: string;
-  price: number;
-  statusCode: number;
-  reverseAmount: string;
-}
+export type GetStorageStatusReturn = StorageStatusParams;

@@ -1,7 +1,7 @@
 import { customAlphabet } from 'nanoid';
 import Firebase from '../common/firebase';
 import Wallet from './wallet';
-import * as types from '../common/types';
+import * as Types from '../common/types';
 
 function getRandomRequestId() {
   const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyz0123456789', 25);
@@ -15,13 +15,14 @@ export default class Client {
 
   private sendTx: any;
 
-  constructor(mnemonic: string, type: types.EnvType) {
+  constructor(mnemonic: string, type: Types.EnvType) {
     this.wallet = new Wallet(mnemonic, type);
     this.firebase = new Firebase(type);
     this.sendTx = this.firebase.getFunctions().httpsCallable('sendTransaction');
   }
 
-  private async awaitResponse(refPath: string) {
+  private async awaitResponse(refPath: string)
+    : Promise<Types.RequestReturn<any>> {
     return new Promise((resolve, reject) => {
       this.firebase.getDatabase().ref(`${refPath}/response`)
         .on('value', (snapshot) => {
@@ -31,7 +32,8 @@ export default class Client {
     });
   }
 
-  private async sendRequest(type: string, params: any) {
+  private async sendRequest(type: string, params: any)
+    : Promise<Types.RequestReturn<any>> {
     const payload = { type, payload: JSON.stringify(params) };
     const data = this.wallet.signaturePayload(payload);
     const { targetAddress, clusterName } = params;
@@ -43,43 +45,52 @@ export default class Client {
     return res;
   }
 
-  public async deploy(params: types.DeployParams) {
+  public async deploy(params: Types.DeployParams)
+    : Promise<Types.RequestReturn<Types.DeployReturn>> {
     const res = await this.sendRequest('deploy', params);
     return res;
   }
 
-  public async redeploy(params: types.RedeployParams) {
+  public async redeploy(params: Types.RedeployParams)
+    : Promise<Types.RequestReturn<null>> {
     const res = await this.sendRequest('redeploy', params);
     return res;
   }
 
-  public async undeploy(params: types.UndeployParams) {
+  public async undeploy(params: Types.UndeployParams)
+    : Promise<Types.RequestReturn<null>> {
     const res = await this.sendRequest('undeploy', params);
     return res;
   }
 
-  public async createNamespace(params: types.CreateStorageParams) {
+  public async createNamespace(params: Types.CreateStorageParams)
+    : Promise<Types.RequestReturn<Types.CreateNamespaceReturn>> {
     const res = await this.sendRequest('createNamespace', params);
     return res;
   }
 
-  public async deleteNamespace(params: types.DeleteStorageParams) {
+  public async deleteNamespace(params: Types.DeleteStorageParams)
+    : Promise<Types.RequestReturn<null>> {
     const res = await this.sendRequest('deleteNamespace', params);
     return res;
   }
 
-  public async createStorage(params: types.CreateStorageParams) {
+  public async createStorage(params: Types.CreateStorageParams)
+    : Promise<Types.RequestReturn<Types.CreateStorageReturn>> {
     const res = await this.sendRequest('createStorage', params);
     return res;
   }
 
-  public async deleteStorage(params: types.DeleteStorageParams) {
+  public async deleteStorage(params: Types.DeleteStorageParams)
+    : Promise<Types.RequestReturn<null>> {
     const res = await this.sendRequest('deleteStorage', params);
     return res;
   }
 
-  public async getContainerInfo(params: types.GetContainerInfoParams) {
-    const res = await this.sendRequest('getContainerInfo', params);
+  /* Secret */
+  public async createSecret(params: Types.CreateSecretParams)
+    : Promise<Types.RequestReturn<null>> {
+    const res = await this.sendRequest('createSecret', params);
     return res;
   }
 
@@ -88,41 +99,101 @@ export default class Client {
     return res;
   }
 
-  public async getClusterInfo(params: types.GetClusterInfoParams) {
+  public async getClusterList(params?: Types.GetClusterListParams)
+    : Promise<Types.GetClusterListReturn[]> {
+    const res: Types.GetClusterListReturn[] = [];
+    let list;
+    const refPath = '/worker/info';
+    if (params && params.targetAddress) {
+      // filtered by address
+      const snap = await this.firebase.getDatabase().ref(refPath)
+        .orderByChild('status/address').equalTo(params.targetAddress)
+        .once('value');
+      list = snap.val();
+    } else {
+      const snap = await this.firebase.getDatabase().ref(refPath).once('value');
+      list = snap.val();
+    }
+
+    const clusterKeys = Object.keys(list);
+    for (const clusterKey of clusterKeys) {
+      const cluster = list[clusterKey];
+      const nodePoolIds = Object.keys(cluster.status.nodePool);
+      const resultNodePool = {};
+      for (const nodePoolId of nodePoolIds) {
+        const nodePool = cluster.status.nodePool[nodePoolId];
+        // choose proper GPU type when gpu option specified
+        if (!params || !params.nodeInfo || !params.nodeInfo.gpu
+            || params.nodeInfo.gpu[nodePool.gpuType] !== undefined) {
+          const nodeIds = Object.keys(nodePool.nodes);
+          const resultNodes = {};
+          for (const nodeId of nodeIds) {
+            const node = nodePool.nodes[nodeId];
+            if (!params || !params.nodeInfo
+                || (params.nodeInfo.cpu <= node.allocatable.cpu
+                && params.nodeInfo.memory <= node.allocatable.memory
+                && (!params.nodeInfo.gpu
+                    || params.nodeInfo.gpu[nodePool.gpuType] <= node.allocatable.gpu)
+                )) {
+              resultNodes[nodeId] = node.allocatable;
+            }
+          }
+
+          if (Object.keys(resultNodes).length !== 0) {
+            resultNodePool[nodePoolId] = {
+              gpuType: nodePool.gpuType,
+              osImage: nodePool.osImage,
+              nodes: resultNodes,
+            };
+          }
+        }
+      }
+
+      if (Object.keys(resultNodePool).length !== 0) {
+        res.push({
+          updatedAt: cluster.updatedAt,
+          address: cluster.status.address,
+          clusterName: cluster.status.clusterName,
+          nodePool: resultNodePool,
+        });
+      }
+    }
+
+    return res;
+  }
+
+  public async getClusterStatus(params: Types.GetClusterStatusParams)
+    : Promise<Types.StatusGetterReturn<Types.GetClusterStatusReturn>> {
     const { targetAddress, clusterName } = params;
     const snap = await this.firebase.getDatabase().ref(`/worker/info/${clusterName}@${targetAddress}`).once('value');
 
     if (!snap.exists()) {
-      throw Error('Cluster not exists');
-    } else {
-      return snap.val();
+      return null;
     }
+    return snap.val();
   }
 
-  public async getClusterList(params: types.GetClusterListParams) {
-    let list = [];
-    const refPath = '/worker/info/';
-    if (params.targetAddress) {
-      // filtered by address
-      const snap = await this.firebase.getDatabase().ref(refPath)
-        .orderByChild('address').equalTo(params.targetAddress)
-        .once('value');
-      list = snap.val();
-    } else if (params.clusterOption) {
-      // TODO: filtered by options
-      const snap = await this.firebase.getDatabase().ref(refPath).once('value');
-      list = snap.val();
-    } else {
-      // no filter
-      const snap = await this.firebase.getDatabase().ref(refPath).once('value');
-      list = snap.val();
+  public async getContainerStatus(params: Types.GetContainerStatusParams)
+    : Promise<Types.GetContainerStatusReturn> {
+    const { clusterName, targetAddress } = params;
+    const statusPath = `/worker/info/${clusterName}@${targetAddress}`;
+    const snap = await this.firebase.getDatabase().ref(statusPath).once('value');
+
+    if (!snap.exists()) {
+      return null;
     }
-    return list;
+    return snap.val();
   }
 
-  public async getHistory(params: types.GetHistoryParams) {
-    const historyList: any[] = [];
-    /* TODO */
-    return historyList;
+  public async getStorageStatus(params: Types.GetStorageStatusParams)
+    : Promise<Types.StatusGetterReturn<Types.GetStorageStatusReturn>> {
+    const { clusterName, targetAddress, storageId } = params;
+    const statusPath = `/storage/${clusterName}@${targetAddress}/${storageId}`;
+    const snap = await this.firebase.getDatabase().ref(statusPath).once('value');
+
+    if (!snap.exists()) {
+      return null;
+    }
+    return snap.val();
   }
 }

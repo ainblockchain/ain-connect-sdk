@@ -49,6 +49,7 @@
   "dependencies": {
     "@ainblockchain/ain-js": "^1.0.2",
     "@ainblockchain/ain-util": "^1.1.5",
+    "@aindev/connect-redis-sdk": "^0.1.6",
     "@types/bip39": "^3.0.0",
     "@types/hdkey": "^0.7.1",
     "bip39": "^3.0.2",
