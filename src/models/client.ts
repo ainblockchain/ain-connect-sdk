@@ -3,6 +3,13 @@ import Firebase from '../common/firebase';
 import Wallet from './wallet';
 import * as Types from '../common/types';
 
+const PodPhasePriority = {
+  failed: 1,
+  pending: 2,
+  createContainer: 3,
+  success: 4,
+};
+
 function getRandomRequestId() {
   const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyz0123456789', 25);
   return nanoid();
@@ -195,14 +202,29 @@ export default class Client {
 
   public async getContainerStatus(params: Types.GetContainerStatusParams)
     : Promise<Types.GetContainerStatusReturn> {
-    const { clusterName, targetAddress } = params;
-    const statusPath = `/worker/info/${clusterName}@${targetAddress}`;
+    const { clusterName, targetAddress, containerId } = params;
+    const statusPath = `/container/${clusterName}@${targetAddress}/${containerId}`;
     const snap = await this.firebase.getDatabase().ref(statusPath).once('value');
 
     if (!snap.exists()) {
       return null;
     }
-    return snap.val();
+
+    const podIds = Object.keys(snap.val());
+    if (podIds.length === 0) {
+      return null;
+    }
+
+    let curStatus: Types.PodPhaseList = 'failed';
+    for (const podId of podIds) {
+      const pod = snap.val()[podId];
+      const podStatus = pod.status.phase;
+      if (PodPhasePriority[curStatus] < PodPhasePriority[podStatus]) {
+        curStatus = podStatus;
+      }
+    }
+
+    return { containerStatus: curStatus };
   }
 
   public async getStorageStatus(params: Types.GetStorageStatusParams)

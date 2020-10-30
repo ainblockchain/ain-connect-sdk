@@ -18,4 +18,14 @@ describe('client', () => {
     });
     expect(res.length).toEqual(1);
   });
+
+  it('get container status', async () => {
+    const res = await client.getContainerStatus({
+      targetAddress: 'mockAddress',
+      clusterName: 'mock1',
+      containerId: 'container1',
+    });
+
+    expect(res?.containerStatus).toEqual('success');
+  });
 });
