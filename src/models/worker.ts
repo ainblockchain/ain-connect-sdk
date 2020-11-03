@@ -94,4 +94,24 @@ export default class Worker {
     const key = `/storage/${clusterName}@${this.getAddress()}/${storageId}`;
     await this.deletePath(key);
   }
+
+  public async getAllContainers(clusterName: string)
+    : Promise<Types.GetAllContainersReturn> {
+    const snap = await this.firebase.getInstance().database()
+      .ref(`/container/${clusterName}@${this.getAddress()}`).once('value');
+    if (!snap.exists) {
+      return null;
+    }
+    return snap.val();
+  }
+
+  public async getAllStorages(clusterName: string)
+    : Promise<Types.GetAllStoragesReturn> {
+    const snap = await this.firebase.getInstance().database()
+      .ref(`/storage/${clusterName}@${this.getAddress()}`).once('value');
+    if (!snap.exists) {
+      return null;
+    }
+    return snap.val();
+  }
 }
