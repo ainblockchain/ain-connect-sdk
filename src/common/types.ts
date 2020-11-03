@@ -78,6 +78,24 @@ export type SetStorageStatusParams = {
   storageStatus: StorageStatusParams;
 }
 
+/* getAllContainers */
+export type GetAllContainersReturn = {
+  [containerId: string]: {
+    [podId: string]: {
+      updatedAt: number;
+      status: PodStatusParams;
+    }
+  }
+} | null;
+
+/* getAllStorages */
+export type GetAllStoragesReturn = {
+  [storageId: string]: {
+    updatedAt: number;
+    status: StorageStatusParams;
+  }
+} | null;
+
 /* Types for Client */
 export type RequestReturn<T> = {
   statusCode: string;
