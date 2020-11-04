@@ -24,7 +24,7 @@ export default class Worker {
 
   public async writeResult(result: any, dbpath: string) {
     const data = this.wallet.signaturePayload(JSON.stringify({
-      updatedAt: Date.now(),
+      updatedAt: this.firebase.getTimestamp(),
       ...result,
     }));
     const reqMassage = {
@@ -42,7 +42,7 @@ export default class Worker {
       .on('child_added', async (data) => {
         const requestId = data.key as string;
         const value = data.val();
-        const methodType = value.payload.type as Types.ListenMethodList;
+        const methodType = value.type as Types.ListenMethodList;
         const dbpath = `/worker/request_queue/${this.clusterName}@${this.wallet.getAddress()}/${requestId}/response`;
         if (value.response) { // already has response
           return;
@@ -78,7 +78,7 @@ export default class Worker {
 
   public async writeStatus(status: object, dbpath: string) {
     const data = this.wallet.signaturePayload(JSON.stringify({
-      updatedAt: Date.now(),
+      updatedAt: this.firebase.getTimestamp(),
       status,
     }));
     const reqMassage = {

@@ -14,6 +14,10 @@ export default class Firebase {
     this.instance = firebase.initializeApp(firebaseConfig);
   }
 
+  public getTimestamp() {
+    return firebase.database.ServerValue.TIMESTAMP;
+  }
+
   public getInstance(): firebase.app.App {
     return this.instance;
   }
