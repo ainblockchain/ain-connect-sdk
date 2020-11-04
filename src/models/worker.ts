@@ -78,10 +78,10 @@ export default class Worker {
     await this.firebase.getInstance().database().ref(path).remove();
   }
 
-  public async writeStatus(payload: object, dbpath: string) {
+  public async writeStatus(status: object, dbpath: string) {
     const data = this.wallet.signaturePayload({
       updatedAt: Date.now(),
-      payload: JSON.stringify(payload),
+      status: JSON.stringify(status),
     });
     const reqMassage = {
       ...data,
@@ -93,7 +93,10 @@ export default class Worker {
 
   public async setClusterStatus(status: Types.ClusterStatusParams) {
     const path = `/worker/info/${status.clusterName}@${this.getAddress()}`;
-    await this.writeStatus(status, path);
+    await this.writeStatus({
+      address: this.getAddress(),
+      ...status,
+    }, path);
   }
 
   public async deleteClusterStatus(clusterName: string) {

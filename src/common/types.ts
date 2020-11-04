@@ -104,6 +104,7 @@ export type RequestReturn<T> = {
 }
 
 export type DeployParams = {
+  targetAddress: string;
   clusterName: string;
   namespaceId: string;
   deployTemplateName?: string;
@@ -136,6 +137,7 @@ export type DeployParams = {
 }
 
 export type DeployReturn = {
+  targetAddress: string;
   clusterName: string;
   containerId: string;
   endpoint: {
@@ -144,6 +146,7 @@ export type DeployReturn = {
 }
 
 export type RedeployParams = {
+  targetAddress: string;
   clusterName: string;
   namespaceId: string;
   containerId: string;
@@ -156,12 +159,14 @@ export type RedeployParams = {
 }
 
 export type UndeployParams = {
+  targetAddress: string;
   clusterName: string;
   namespaceId: string;
   containerId: string;
 }
 
 export type CreateNamespaceParams = {
+  targetAddress: string;
   clusterName: string;
 }
 
@@ -170,11 +175,13 @@ export type CreateNamespaceReturn = {
 }
 
 export type DeleteNamespaceParams = {
+  targetAddress: string;
   clusterName: string;
   namespaceId: string;
 }
 
 export type CreateStorageParams = {
+  targetAddress: string;
   clusterName: string;
   namespaceId: string;
   capacity: number; // Gi
@@ -189,6 +196,7 @@ export type CreateStorageReturn = {
 }
 
 export type DeleteStorageParams = {
+  targetAddress: string;
   clusterName: string;
   namespaceId: string;
   storageId: string;
@@ -196,6 +204,7 @@ export type DeleteStorageParams = {
 }
 
 export type CreateSecretParams = {
+  targetAddress: string;
   clusterName: string;
   namespaceId: string;
   name: string;
@@ -206,6 +215,7 @@ export type CreateSecretParams = {
 }
 
 export type PutStorageToFtpParams = {
+  targetAddress: string;
   clusterName: string;
   namespaceId: string;
   storageId: string;
@@ -214,6 +224,7 @@ export type PutStorageToFtpParams = {
 }
 
 export type GetStorageFromFtpParams = {
+  targetAddress: string;
   clusterName: string;
   namespaceId: string;
   storageId: string;
@@ -221,6 +232,7 @@ export type GetStorageFromFtpParams = {
 }
 
 export type GetContainerLogParams = {
+  targetAddress: string;
   clusterName: string;
   namespaceId: string;
   containerId: string;
