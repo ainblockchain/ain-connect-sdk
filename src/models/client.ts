@@ -44,7 +44,12 @@ export default class Client {
 
   private async sendRequest(type: string, params: any)
     : Promise<Types.RequestReturn<any>> {
-    const payload = { type, payload: params, updatedAt: this.firebase.getTimestamp() };
+    const payload = {
+      type,
+      payload: params,
+      address: this.wallet.getAddress(),
+      updatedAt: this.firebase.getTimestamp(),
+    };
     const data = this.wallet.signaturePayload(JSON.stringify(payload));
     const { targetAddress, clusterName } = params;
     const requestId = getRandomRequestId();

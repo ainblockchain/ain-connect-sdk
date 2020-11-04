@@ -53,7 +53,7 @@ export default class Worker {
             result = {
               statusCode: error.STATUS_CODE.success,
               result: await this.listenMethodList[methodType](
-                value.address, requestId, value.params,
+                value.address, value.payload,
               ),
             };
           } catch (e) {
