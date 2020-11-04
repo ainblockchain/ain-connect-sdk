@@ -131,7 +131,7 @@ export type DeployParams = {
     env?: object;
     port: number[];
   }
-  maxDuration: number;
+  maxDuration?: number;
   requestTimeout?: number;
   runningTimeout?: number;
 }
