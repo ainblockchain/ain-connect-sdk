@@ -50,7 +50,9 @@ export default class Client {
       address: this.wallet.getAddress(),
       updatedAt: this.firebase.getTimestamp(),
     };
-    const data = this.wallet.signaturePayload(JSON.stringify(payload));
+    const data = this.wallet.signaturePayload({
+      payload: JSON.stringify(payload),
+    });
     const { targetAddress, clusterName } = params;
     const requestId = getRandomRequestId();
     const refPath = `/worker/request_queue/${clusterName}@${targetAddress}/${requestId}`;

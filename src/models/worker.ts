@@ -23,10 +23,12 @@ export default class Worker {
   }
 
   public async writeResult(result: any, dbpath: string) {
-    const data = this.wallet.signaturePayload(JSON.stringify({
-      updatedAt: this.firebase.getTimestamp(),
-      ...result,
-    }));
+    const data = this.wallet.signaturePayload({
+      payload: JSON.stringify({
+        updatedAt: this.firebase.getTimestamp(),
+        ...result,
+      }),
+    });
     const reqMassage = {
       ...data,
       dbpath,
@@ -73,14 +75,18 @@ export default class Worker {
   }
 
   public async deletePath(path: string) {
-    await this.firebase.getInstance().database().ref(path).remove();
+    const data = this.wallet.signaturePayload({ path });
+    await this.firebase.getInstance().functions()
+      .httpsCallable('deleteTransaction')(data);
   }
 
   public async writeStatus(status: object, dbpath: string) {
-    const data = this.wallet.signaturePayload(JSON.stringify({
-      updatedAt: this.firebase.getTimestamp(),
-      status,
-    }));
+    const data = this.wallet.signaturePayload({
+      payload: JSON.stringify({
+        updatedAt: this.firebase.getTimestamp(),
+        status,
+      }),
+    });
     const reqMassage = {
       ...data,
       dbpath,

@@ -49,9 +49,9 @@ export default class Wallet {
     return this.ainJs;
   }
 
-  public signaturePayload(payload: string) {
+  public signaturePayload(payload: object) {
     // Remove undefined data
-    const data = { payload };
+    const data = payload;
     const fields: ainUtil.Field[] = [];
     Object.keys(data).forEach((name) => {
       fields.push({
