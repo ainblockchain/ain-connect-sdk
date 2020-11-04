@@ -33,12 +33,11 @@ export default class Client {
     return new Promise((resolve, reject) => {
       this.firebase.getDatabase().ref(`${refPath}/response`)
         .on('value', (snapshot) => {
-          this.firebase.getDatabase().ref(`${refPath}/response`).off();
-          const res = snapshot.val();
-          if (res.result) {
-            res.result = JSON.parse(res.result);
+          if (snapshot.exists()) {
+            this.firebase.getDatabase().ref(`${refPath}/response`).off();
+            const res = snapshot.val();
+            resolve(res);
           }
-          resolve(res);
         });
     });
   }
