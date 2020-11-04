@@ -23,12 +23,10 @@ export default class Worker {
   }
 
   public async writeResult(result: any, dbpath: string) {
-    const payload = result;
-    payload.result = JSON.stringify(result);
-    const data = this.wallet.signaturePayload({
+    const data = this.wallet.signaturePayload(JSON.stringify({
       updatedAt: Date.now(),
-      ...payload,
-    });
+      ...result,
+    }));
     const reqMassage = {
       ...data,
       dbpath,
@@ -79,10 +77,10 @@ export default class Worker {
   }
 
   public async writeStatus(status: object, dbpath: string) {
-    const data = this.wallet.signaturePayload({
+    const data = this.wallet.signaturePayload(JSON.stringify({
       updatedAt: Date.now(),
-      status: JSON.stringify(status),
-    });
+      status,
+    }));
     const reqMassage = {
       ...data,
       dbpath,

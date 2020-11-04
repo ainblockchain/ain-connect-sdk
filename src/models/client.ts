@@ -45,8 +45,8 @@ export default class Client {
 
   private async sendRequest(type: string, params: any)
     : Promise<Types.RequestReturn<any>> {
-    const payload = { type, payload: JSON.stringify(params) };
-    const data = this.wallet.signaturePayload(payload);
+    const payload = { type, payload: params };
+    const data = this.wallet.signaturePayload(JSON.stringify(payload));
     const { targetAddress, clusterName } = params;
     const requestId = getRandomRequestId();
     const refPath = `/worker/request_queue/${clusterName}@${targetAddress}/${requestId}`;
