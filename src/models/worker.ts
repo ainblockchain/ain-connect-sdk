@@ -22,15 +22,19 @@ export default class Worker {
     return this.wallet.getAddress();
   }
 
-  public async writePayload(payload: object, dbpath: string) {
+  public async writeResult(result: any, dbpath: string) {
+    const payload = result;
+    payload.result = JSON.stringify(result);
     const data = this.wallet.signaturePayload({
-      payload: JSON.stringify(payload),
+      updatedAt: Date.now(),
+      ...payload,
     });
     const reqMassage = {
       ...data,
       dbpath,
     };
-    await this.firebase.getInstance().functions().httpsCallable('sendTransaction')(reqMassage);
+    await this.firebase.getInstance().functions()
+      .httpsCallable('sendTransaction')(reqMassage);
   }
 
   public listenRequest(methods: Types.workerListenMethod) {
@@ -38,24 +42,33 @@ export default class Worker {
     this.firebase.getInstance().database()
       .ref(`/worker/request_queue/${this.clusterName}@${this.wallet.getAddress()}`)
       .on('child_added', async (data) => {
-        const requstId = data.key as string;
+        const requestId = data.key as string;
         const value = data.val();
         const methodType = value.payload.type as Types.ListenMethodList;
-        const dbpath = `/worker/request_queue/${this.clusterName}@${this.wallet.getAddress()}/${requstId}/response`;
-        if (value.response) {
+        const dbpath = `/worker/request_queue/${this.clusterName}@${this.wallet.getAddress()}/${requestId}/response`;
+        if (value.response) { // already has response
           return;
         }
         if (this.listenMethodList[methodType]) {
           let result;
           try {
-            result = await this.listenMethodList[methodType](value.address, requstId, value.params);
-          } catch (_) {
-            result = { statusCode: error.STATUS_CODE.failedMethod };
+            result = {
+              statusCode: error.STATUS_CODE.success,
+              result: await this.listenMethodList[methodType](
+                value.address, requestId, value.params,
+              ),
+            };
+          } catch (e) {
+            result = {
+              statusCode: error.STATUS_CODE.failedMethod,
+              errMessage: String(e),
+            };
           }
-          await this.writePayload(result, dbpath);
+          await this.writeResult(result, dbpath);
         } else {
-          await this.writePayload({
+          await this.writeResult({
             statusCode: error.STATUS_CODE.invalidParams,
+            errMessage: `Not defined method: ${methodType}`,
           }, dbpath);
         }
       });
@@ -65,9 +78,22 @@ export default class Worker {
     await this.firebase.getInstance().database().ref(path).remove();
   }
 
+  public async writeStatus(payload: object, dbpath: string) {
+    const data = this.wallet.signaturePayload({
+      updatedAt: Date.now(),
+      payload: JSON.stringify(payload),
+    });
+    const reqMassage = {
+      ...data,
+      dbpath,
+    };
+    await this.firebase.getInstance().functions()
+      .httpsCallable('sendTransaction')(reqMassage);
+  }
+
   public async setClusterStatus(status: Types.ClusterStatusParams) {
     const path = `/worker/info/${status.clusterName}@${this.getAddress()}`;
-    await this.writePayload(status, path);
+    await this.writeStatus(status, path);
   }
 
   public async deleteClusterStatus(clusterName: string) {
@@ -77,7 +103,7 @@ export default class Worker {
   public async setPodStatus(status: Types.SetPodStatusParams) {
     const { clusterName, containerId, podId } = status;
     const key = `/container/${clusterName}@${this.getAddress()}/${containerId}/${podId}`;
-    await this.writePayload(status.podStatus, key);
+    await this.writeStatus(status.podStatus, key);
   }
 
   public async deletePodStatus(clusterName: string, containerId: string, podId: string) {
@@ -87,7 +113,7 @@ export default class Worker {
 
   public async setStorageStatus(status: Types.SetStorageStatusParams) {
     const key = `/storage/${status.clusterName}@${this.getAddress()}/${status.storageId}`;
-    await this.writePayload(status.storageStatus, key);
+    await this.writeStatus(status.storageStatus, key);
   }
 
   public async deleteStorageStatus(clusterName: string, storageId: string) {

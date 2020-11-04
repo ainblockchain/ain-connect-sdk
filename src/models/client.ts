@@ -34,7 +34,11 @@ export default class Client {
       this.firebase.getDatabase().ref(`${refPath}/response`)
         .on('value', (snapshot) => {
           this.firebase.getDatabase().ref(`${refPath}/response`).off();
-          resolve(snapshot.val());
+          const res = snapshot.val();
+          if (res.result) {
+            res.result = JSON.parse(res.result);
+          }
+          resolve(res);
         });
     });
   }
@@ -70,13 +74,13 @@ export default class Client {
     return res;
   }
 
-  public async createNamespace(params: Types.CreateStorageParams)
+  public async createNamespace(params: Types.CreateNamespaceParams)
     : Promise<Types.RequestReturn<Types.CreateNamespaceReturn>> {
     const res = await this.sendRequest('createNamespace', params);
     return res;
   }
 
-  public async deleteNamespace(params: Types.DeleteStorageParams)
+  public async deleteNamespace(params: Types.DeleteNamespaceParams)
     : Promise<Types.RequestReturn<null>> {
     const res = await this.sendRequest('deleteNamespace', params);
     return res;

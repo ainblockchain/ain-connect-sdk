@@ -17,7 +17,7 @@ export type ListenMethodList = 'deploy' | 'redeploy' | 'undeploy'
  | 'putStorageToFtp' | 'getStorageFromFtp';
 
 export type workerListenMethod = {
-  [type in ListenMethodList]: Function;
+  [type: string]: Function;
 };
 
 export type NodeInfo = {
@@ -29,7 +29,6 @@ export type NodeInfo = {
 /* Types for Worker */
 /* setClusterStatus */
 export type ClusterStatusParams = {
-  address: string;
   clusterName: string;
   nodePool: {
     [nodePoolName: string]: {
@@ -52,7 +51,7 @@ export type PodStatusParams = {
   status: {
     phase: PodPhaseList;
     message?: string;
-    startTime?:string;
+    startTime?: string;
     condition?: {
       type: ConditionType;
       status: boolean;
@@ -131,6 +130,7 @@ export type DeployParams = {
     env?: object;
     port: number[];
   }
+  maxDuration: number;
   requestTimeout?: number;
   runningTimeout?: number;
 }
@@ -147,7 +147,7 @@ export type RedeployParams = {
   clusterName: string;
   namespaceId: string;
   containerId: string;
-  option?: {
+  option: {
     port?: number[];
     imageName?: string;
     replicas?: number;
