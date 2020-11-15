@@ -114,6 +114,8 @@ export type DeployParams = {
     storageSpec?: {
       [storageId: string]: {
         mountPath: string;
+        subPath?: string;
+        readOnly?: 0 | 1;
       }
     }
     secretSpec?: {
@@ -185,9 +187,9 @@ export type CreateStorageParams = {
   clusterName: string;
   namespaceId: string;
   capacity: number; // Gi
-  isSharedNfs?: {
-    ip: string;
-    basePath: string;
+  nfsInfo?: {
+    server: string;
+    path: string;
   }
 }
 
@@ -200,7 +202,6 @@ export type DeleteStorageParams = {
   clusterName: string;
   namespaceId: string;
   storageId: string;
-  sharedNfs: boolean;
 }
 
 export type CreateSecretParams = {

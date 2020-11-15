@@ -228,7 +228,7 @@ export default class Client {
     let curStatus: Types.PodPhaseList = 'failed';
     for (const podId of podIds) {
       const pod = snap.val()[podId];
-      const podStatus = pod.status.phase;
+      const podStatus = pod.status.status.phase;
       if (PodPhasePriority[curStatus] < PodPhasePriority[podStatus]) {
         curStatus = podStatus;
       }
