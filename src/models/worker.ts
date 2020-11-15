@@ -84,7 +84,7 @@ export default class Worker {
     const data = this.wallet.signaturePayload({
       payload: JSON.stringify({
         updatedAt: this.firebase.getTimestamp(),
-        status,
+        ...status,
       }),
     });
     const reqMassage = {

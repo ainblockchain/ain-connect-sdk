@@ -155,7 +155,7 @@ export default class Client {
     const clusterKeys = Object.keys(list);
     for (const clusterKey of clusterKeys) {
       const cluster = list[clusterKey];
-      const nodePoolIds = Object.keys(cluster.status.nodePool);
+      const nodePoolIds = Object.keys(cluster.status.nodePool || {});
       const resultNodePool = {};
       for (const nodePoolId of nodePoolIds) {
         const nodePool = cluster.status.nodePool[nodePoolId];
@@ -228,7 +228,7 @@ export default class Client {
     let curStatus: Types.PodPhaseList = 'failed';
     for (const podId of podIds) {
       const pod = snap.val()[podId];
-      const podStatus = pod.status.status.phase;
+      const podStatus = pod.status.phase;
       if (PodPhasePriority[curStatus] < PodPhasePriority[podStatus]) {
         curStatus = podStatus;
       }
