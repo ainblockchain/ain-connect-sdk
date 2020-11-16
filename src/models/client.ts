@@ -155,7 +155,7 @@ export default class Client {
     const clusterKeys = Object.keys(list);
     for (const clusterKey of clusterKeys) {
       const cluster = list[clusterKey];
-      const nodePoolIds = Object.keys(cluster.status.nodePool);
+      const nodePoolIds = Object.keys(cluster.status.nodePool || {});
       const resultNodePool = {};
       for (const nodePoolId of nodePoolIds) {
         const nodePool = cluster.status.nodePool[nodePoolId];
