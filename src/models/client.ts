@@ -155,10 +155,10 @@ export default class Client {
     const clusterKeys = Object.keys(list);
     for (const clusterKey of clusterKeys) {
       const cluster = list[clusterKey];
-      const nodePoolIds = Object.keys(cluster.status.nodePool || {});
+      const nodePoolIds = Object.keys(cluster.params.nodePool || {});
       const resultNodePool = {};
       for (const nodePoolId of nodePoolIds) {
-        const nodePool = cluster.status.nodePool[nodePoolId];
+        const nodePool = cluster.params.nodePool[nodePoolId];
         // choose proper GPU type when gpu option specified
         if (!params || !params.nodeInfo || !params.nodeInfo.gpu
             || params.nodeInfo.gpu[nodePool.gpuType] !== undefined) {
@@ -189,8 +189,8 @@ export default class Client {
       if (Object.keys(resultNodePool).length !== 0) {
         res.push({
           updatedAt: cluster.updatedAt,
-          address: cluster.status.address,
-          clusterName: cluster.status.clusterName,
+          address: cluster.params.address,
+          clusterName: cluster.params.clusterName,
           nodePool: resultNodePool,
         });
       }
@@ -228,7 +228,7 @@ export default class Client {
     let curStatus: Types.PodPhaseList = 'failed';
     for (const podId of podIds) {
       const pod = snap.val()[podId];
-      const podStatus = pod.status.phase;
+      const podStatus = pod.params.status.phase;
       if (PodPhasePriority[curStatus] < PodPhasePriority[podStatus]) {
         curStatus = podStatus;
       }
