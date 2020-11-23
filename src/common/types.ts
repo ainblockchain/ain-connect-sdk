@@ -82,7 +82,7 @@ export type GetAllContainersReturn = {
   [containerId: string]: {
     [podId: string]: {
       updatedAt: number;
-      status: PodStatusParams;
+      params: PodStatusParams;
     }
   }
 } | null;
