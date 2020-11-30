@@ -21,6 +21,7 @@ export type StorageStatus = 'failed' | 'pending' | 'createStorage' | 'success';
 export type ConditionType = 'Initialized' | 'Ready' | 'ContainersReady' | 'PodScheduled';
 
 export type ListenMethodList = 'deploy' | 'redeploy' | 'undeploy'
+ | 'deployForDocker' | 'undeployForDocker'
  | 'createNamespace' | 'deleteNamespace'
  | 'createStorage' | 'deleteStorage'
  | 'createSecret' | 'getContainerLog'
@@ -34,6 +35,11 @@ export type NodeInfo = {
   cpu: number; // m
   memory: number; // Mi
   gpu: number;
+}
+
+export type ContainerStatusForDocker = {
+  status: string;
+  image: string;
 }
 
 /* Types for Worker */
@@ -77,6 +83,13 @@ export type SetPodStatusParams = {
   podStatus: PodStatusParams;
 }
 
+/* setContainerStatusForDocker */
+export type SetContainerStatusForDocker = {
+  clusterName: string;
+  containerId: string;
+  containerStatus: ContainerStatusForDocker;
+}
+
 /* setStorageStatus */
 export type StorageStatusParams = {
   status: StorageStatus;
@@ -105,7 +118,16 @@ export type GetAllStoragesReturn = {
   }
 } | null;
 
-/* Types for Client */
+/* getAllContainersForDocker */
+export type GetAllContainersForDockerReturn = {
+  [containerId: string]: ContainerStatusForDocker;
+} | null;
+
+/*
+----------------------------------------------------
+|                 Types for Client                 |
+----------------------------------------------------
+*/
 export type RequestReturn<T> = {
   statusCode: string;
   result?: T;
@@ -174,6 +196,27 @@ export type UndeployParams = {
   targetAddress: string;
   clusterName: string;
   namespaceId: string;
+  containerId: string;
+}
+
+/* DeployForDocker */
+export type DeployForDockerParams = {
+  clusterName: string;
+  targetAddress: string;
+  image: string;
+  env?: {
+    [key: string]: string
+  };
+  command?: string[];
+}
+export type DeployForDockerReturn = {
+  containerId: string;
+}
+
+/* UndeployForDocker */
+export type UndeployForDockerParams = {
+  clusterName: string;
+  targetAddress: string;
   containerId: string;
 }
 
@@ -298,6 +341,14 @@ export type GetContainerStatusParams = {
 export type GetContainerStatusReturn = {
   containerStatus: PodPhaseList;
 } | null;
+
+/* getContainerStatusForDocker */
+export type GetContainerStatusForDockerParams = {
+  clusterName: string;
+  targetAddress: string;
+  containerId: string;
+}
+export type GetContainerStatusForDockerReturn = ContainerStatusForDocker | null;
 
 /* getStorageStatus */
 export type GetStorageStatusParams = {
