@@ -21,6 +21,7 @@ export type StorageStatus = 'failed' | 'pending' | 'createStorage' | 'success';
 export type ConditionType = 'Initialized' | 'Ready' | 'ContainersReady' | 'PodScheduled';
 
 export type ListenMethodList = 'deploy' | 'redeploy' | 'undeploy'
+ | 'deployForDocker' | 'undeployForDocker'
  | 'createNamespace' | 'deleteNamespace'
  | 'createStorage' | 'deleteStorage'
  | 'createSecret' | 'getContainerLog'

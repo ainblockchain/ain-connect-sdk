@@ -68,6 +68,12 @@ export default class Client {
     return res;
   }
 
+  public async deployForDocker(params: Types.DeployForDockerParams)
+    : Promise<Types.RequestReturn<Types.DeployForDockerReturn>> {
+    const res = await this.sendRequest('deployForDocker', params);
+    return res;
+  }
+
   public async redeploy(params: Types.RedeployParams)
     : Promise<Types.RequestReturn<null>> {
     const res = await this.sendRequest('redeploy', params);
@@ -77,6 +83,12 @@ export default class Client {
   public async undeploy(params: Types.UndeployParams)
     : Promise<Types.RequestReturn<null>> {
     const res = await this.sendRequest('undeploy', params);
+    return res;
+  }
+
+  public async undeployForDocker(params: Types.UndeployForDockerParams)
+    : Promise<Types.RequestReturn<null>> {
+    const res = await this.sendRequest('undeployForDocker', params);
     return res;
   }
 
