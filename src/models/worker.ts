@@ -12,10 +12,11 @@ export default class Worker {
 
   private clusterName: string
 
-  constructor(mnemonic: string, clusterName: string, env: Types.EnvType) {
+  constructor(mnemonic: string, clusterName: string,
+    env: Types.EnvType, config?: Types.FirebaseConfig) {
     this.wallet = new Wallet(mnemonic, env);
     this.clusterName = clusterName;
-    this.firebase = new Firebase(env);
+    this.firebase = new Firebase(env, config);
   }
 
   public getAddress() {
