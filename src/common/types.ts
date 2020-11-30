@@ -105,7 +105,11 @@ export type GetAllStoragesReturn = {
   }
 } | null;
 
-/* Types for Client */
+/*
+----------------------------------------------------
+|                 Types for Client                 |
+----------------------------------------------------
+*/
 export type RequestReturn<T> = {
   statusCode: string;
   result?: T;
@@ -174,6 +178,27 @@ export type UndeployParams = {
   targetAddress: string;
   clusterName: string;
   namespaceId: string;
+  containerId: string;
+}
+
+/* DeployForDocker */
+export type DeployForDockerParams = {
+  clusterName: string;
+  targetAddress: string;
+  image: string;
+  env?: {
+    [key: string]: string
+  };
+  command: string[];
+}
+export type DeployForDockerReturn = {
+  containerId: string;
+}
+
+/* UndeployForDocker */
+export type UndeployForDockerParams = {
+  clusterName: string;
+  targetAddress: string;
   containerId: string;
 }
 
@@ -297,6 +322,17 @@ export type GetContainerStatusParams = {
 }
 export type GetContainerStatusReturn = {
   containerStatus: PodPhaseList;
+} | null;
+
+/* getContainerStatusForDocker */
+export type GetContainerStatusForDockerParams = {
+  clusterName: string;
+  targetAddress: string;
+  containerId: string;
+}
+export type GetContainerStatusForDockerReturn = {
+  image: string;
+  status: string;
 } | null;
 
 /* getStorageStatus */

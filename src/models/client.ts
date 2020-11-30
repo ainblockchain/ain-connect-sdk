@@ -237,6 +237,18 @@ export default class Client {
     return { containerStatus: curStatus };
   }
 
+  public async getContainerStatusForDocker(params: Types.GetContainerStatusForDockerParams)
+    : Promise<Types.GetContainerStatusForDockerReturn> {
+    const { clusterName, targetAddress, containerId } = params;
+    const statusPath = `/container/${clusterName}@${targetAddress}/${containerId}`;
+    const snap = await this.firebase.getDatabase().ref(statusPath).once('value');
+
+    if (!snap.exists()) {
+      return null;
+    }
+    return snap.val();
+  }
+
   public async getStorageStatus(params: Types.GetStorageStatusParams)
     : Promise<Types.StatusGetterReturn<Types.GetStorageStatusReturn>> {
     const { clusterName, targetAddress, storageId } = params;
