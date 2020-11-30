@@ -207,7 +207,7 @@ export type DeployForDockerParams = {
   env?: {
     [key: string]: string
   };
-  command: string[];
+  command?: string[];
 }
 export type DeployForDockerReturn = {
   containerId: string;
