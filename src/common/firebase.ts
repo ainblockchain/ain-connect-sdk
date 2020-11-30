@@ -3,14 +3,19 @@ import 'firebase/auth';
 import 'firebase/database';
 import 'firebase/functions';
 import * as constants from './constants';
-
-export type EnvType = 'prod' | 'staging';
+import * as Types from './types';
 
 export default class Firebase {
   private instance: firebase.app.App;
 
-  constructor(env: EnvType) {
-    const firebaseConfig = (env === 'prod') ? constants.PROD_FIREBASE_CONFIG : constants.STAGING_FIREBASE_CONFIG;
+  constructor(env: Types.EnvType, config?: Types.FirebaseConfig) {
+    let firebaseConfig;
+    if (config) {
+      firebaseConfig = config;
+    } else {
+      firebaseConfig = (env === 'prod')
+        ? constants.PROD_FIREBASE_CONFIG : constants.STAGING_FIREBASE_CONFIG;
+    }
     this.instance = firebase.initializeApp(firebaseConfig);
   }
 

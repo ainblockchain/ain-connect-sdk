@@ -22,9 +22,9 @@ export default class Client {
 
   private sendTx: any;
 
-  constructor(mnemonic: string, type: Types.EnvType) {
-    this.wallet = new Wallet(mnemonic, type);
-    this.firebase = new Firebase(type);
+  constructor(mnemonic: string, env: Types.EnvType, config?: Types.FirebaseConfig) {
+    this.wallet = new Wallet(mnemonic, env);
+    this.firebase = new Firebase(env, config);
     this.sendTx = this.firebase.getFunctions().httpsCallable('sendTransaction');
   }
 

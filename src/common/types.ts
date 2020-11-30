@@ -3,6 +3,16 @@ export interface RedisCallback {
 }
 
 export type EnvType = 'prod' | 'staging';
+export type FirebaseConfig = {
+  apiKey: string;
+  authDomain: string;
+  databaseURL: string;
+  projectId: string;
+  storageBucket: string;
+  messagingSenderId: string;
+  appId: string;
+  measurementId: string;
+}
 
 // sleep < failed < pending < createContainer < success
 export type PodPhaseList = 'failed' | 'pending' | 'createContainer' | 'success';
