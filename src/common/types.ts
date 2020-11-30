@@ -37,6 +37,11 @@ export type NodeInfo = {
   gpu: number;
 }
 
+export type ContainerStatusForDocker = {
+  status: string;
+  image: string;
+}
+
 /* Types for Worker */
 /* setClusterStatus */
 export type ClusterStatusParams = {
@@ -78,6 +83,13 @@ export type SetPodStatusParams = {
   podStatus: PodStatusParams;
 }
 
+/* setContainerStatusForDocker */
+export type SetContainerStatusForDocker = {
+  clusterName: string;
+  containerId: string;
+  containerStatus: ContainerStatusForDocker;
+}
+
 /* setStorageStatus */
 export type StorageStatusParams = {
   status: StorageStatus;
@@ -104,6 +116,11 @@ export type GetAllStoragesReturn = {
     updatedAt: number;
     status: StorageStatusParams;
   }
+} | null;
+
+/* getAllContainersForDocker */
+export type GetAllContainersForDockerReturn = {
+  [containerId: string]: ContainerStatusForDocker;
 } | null;
 
 /*
@@ -331,10 +348,7 @@ export type GetContainerStatusForDockerParams = {
   targetAddress: string;
   containerId: string;
 }
-export type GetContainerStatusForDockerReturn = {
-  image: string;
-  status: string;
-} | null;
+export type GetContainerStatusForDockerReturn = ContainerStatusForDocker | null;
 
 /* getStorageStatus */
 export type GetStorageStatusParams = {

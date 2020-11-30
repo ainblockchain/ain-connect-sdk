@@ -108,6 +108,19 @@ export default class Worker {
     await this.deletePath(`/worker/info/${clusterName}@${this.getAddress()}`);
   }
 
+  public async setWorkerStatusForDocker(clusterName: string) {
+    const path = `/worker/info/${clusterName}@${this.getAddress()}`;
+    await this.writeStatus({
+      address: this.getAddress(),
+      isDocker: true,
+      updatedAt: this.firebase.getTimestamp(),
+    }, path);
+  }
+
+  public async deleteWorkerStatusForDocker(clusterName: string) {
+    await this.deletePath(`/worker/info/${clusterName}@${this.getAddress()}`);
+  }
+
   public async setPodStatus(status: Types.SetPodStatusParams) {
     const { clusterName, containerId, podId } = status;
     const key = `/container/${clusterName}@${this.getAddress()}/${containerId}/${podId}`;
@@ -116,6 +129,17 @@ export default class Worker {
 
   public async deletePodStatus(clusterName: string, containerId: string, podId: string) {
     const key = `/container/${clusterName}@${this.getAddress()}/${containerId}/${podId}`;
+    await this.deletePath(key);
+  }
+
+  public async setContainerStatusForDocker(status: Types.SetContainerStatusForDocker) {
+    const { clusterName, containerId } = status;
+    const key = `/container/${clusterName}@${this.getAddress()}/${containerId}`;
+    await this.writeStatus(status.containerStatus, key);
+  }
+
+  public async deleteContainerStatusForDocker(clusterName: string, containerId: string) {
+    const key = `/container/${clusterName}@${this.getAddress()}/${containerId}`;
     await this.deletePath(key);
   }
 
@@ -143,6 +167,16 @@ export default class Worker {
     : Promise<Types.GetAllStoragesReturn> {
     const snap = await this.firebase.getInstance().database()
       .ref(`/storage/${clusterName}@${this.getAddress()}`).once('value');
+    if (!snap.exists) {
+      return null;
+    }
+    return snap.val();
+  }
+
+  public async getAllContainersForDocker(clusterName: string)
+    : Promise<Types.GetAllContainersForDockerReturn> {
+    const snap = await this.firebase.getInstance().database()
+      .ref(`/container/${clusterName}@${this.getAddress()}`).once('value');
     if (!snap.exists) {
       return null;
     }
