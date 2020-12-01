@@ -282,4 +282,24 @@ export default class Client {
     }
     return snap.val();
   }
+
+  public async getAllContainers(clusterName: string, targetAddress: string)
+    : Promise<Types.GetAllContainersReturn> {
+    const snap = await this.firebase.getInstance().database()
+      .ref(`/container/${clusterName}@${targetAddress}`).once('value');
+    if (!snap.exists) {
+      return null;
+    }
+    return snap.val();
+  }
+
+  public async getAllContainersForDocker(clusterName: string, targetAddress: string)
+    : Promise<Types.GetAllContainersForDockerReturn> {
+    const snap = await this.firebase.getInstance().database()
+      .ref(`/container/${clusterName}@${targetAddress}`).once('value');
+    if (!snap.exists) {
+      return null;
+    }
+    return snap.val();
+  }
 }
