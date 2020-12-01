@@ -64,6 +64,7 @@ export type ClusterStatusParams = {
 export type PodStatusParams = {
   podName: string;
   namespaceId: string;
+  image: string;
   status: {
     phase: PodPhaseList;
     message?: string;
@@ -81,7 +82,6 @@ export type SetPodStatusParams = {
   containerId: string;
   podId: string;
   podStatus: PodStatusParams;
-  image: string;
 }
 
 /* setContainerStatusForDocker */
