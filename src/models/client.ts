@@ -221,15 +221,6 @@ export default class Client {
     return res;
   }
 
-  public async getWorkerList()
-    : Promise<Types.GetClusterListReturn[]> {
-    const res: Types.GetClusterListReturn[] = [];
-    let list;
-    const refPath = '/workerDocker/info';
-
-    return res;
-  }
-
   public async getClusterStatus(params: Types.GetClusterStatusParams)
     : Promise<Types.StatusGetterReturn<Types.GetClusterStatusReturn>> {
     const { targetAddress, clusterName } = params;
