@@ -112,8 +112,8 @@ export default class Worker {
     const path = `/worker/info/${clusterName}@${this.getAddress()}`;
     await this.writeStatus({
       address: this.getAddress(),
+      clusterName,
       isDocker: true,
-      updatedAt: this.firebase.getTimestamp(),
     }, path);
   }
 

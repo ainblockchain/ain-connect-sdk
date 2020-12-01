@@ -309,7 +309,8 @@ export type GetClusterListReturn = {
   updatedAt: number;
   address: string;
   clusterName: string;
-  nodePool: {
+  isDocker?: boolean;
+  nodePool?: {
     [nodePoolName: string]: {
       gpuType: string,
       osImage: string,
