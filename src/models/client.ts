@@ -167,46 +167,65 @@ export default class Client {
     const clusterKeys = Object.keys(list);
     for (const clusterKey of clusterKeys) {
       const cluster = list[clusterKey];
-      const nodePoolIds = Object.keys(cluster.params.nodePool || {});
-      const resultNodePool = {};
-      for (const nodePoolId of nodePoolIds) {
-        const nodePool = cluster.params.nodePool[nodePoolId];
-        // choose proper GPU type when gpu option specified
-        if (!params || !params.nodeInfo || !params.nodeInfo.gpu
-            || params.nodeInfo.gpu[nodePool.gpuType] !== undefined) {
-          const nodeIds = Object.keys(nodePool.nodes);
-          const resultNodes = {};
-          for (const nodeId of nodeIds) {
-            const node = nodePool.nodes[nodeId];
-            if (!params || !params.nodeInfo
-                || (params.nodeInfo.cpu <= node.allocatable.cpu
-                && params.nodeInfo.memory <= node.allocatable.memory
-                && (!params.nodeInfo.gpu
-                    || params.nodeInfo.gpu[nodePool.gpuType] <= node.allocatable.gpu)
-                )) {
-              resultNodes[nodeId] = node.allocatable;
-            }
-          }
-
-          if (Object.keys(resultNodes).length !== 0) {
-            resultNodePool[nodePoolId] = {
-              gpuType: nodePool.gpuType,
-              osImage: nodePool.osImage,
-              nodes: resultNodes,
-            };
-          }
-        }
-      }
-
-      if (Object.keys(resultNodePool).length !== 0) {
+      if (cluster.params.isDocker) { // Docker Workers
+        // TODO: update for docker hwSpec
         res.push({
           updatedAt: cluster.updatedAt,
           address: cluster.params.address,
           clusterName: cluster.params.clusterName,
-          nodePool: resultNodePool,
+          isDocker: true,
         });
+      } else { // K8s Workers
+        const nodePoolIds = Object.keys(cluster.params.nodePool || {});
+        const resultNodePool = {};
+        for (const nodePoolId of nodePoolIds) {
+          const nodePool = cluster.params.nodePool[nodePoolId];
+          // choose proper GPU type when gpu option specified
+          if (!params || !params.nodeInfo || !params.nodeInfo.gpu
+              || params.nodeInfo.gpu[nodePool.gpuType] !== undefined) {
+            const nodeIds = Object.keys(nodePool.nodes);
+            const resultNodes = {};
+            for (const nodeId of nodeIds) {
+              const node = nodePool.nodes[nodeId];
+              if (!params || !params.nodeInfo
+                  || (params.nodeInfo.cpu <= node.allocatable.cpu
+                  && params.nodeInfo.memory <= node.allocatable.memory
+                  && (!params.nodeInfo.gpu
+                      || params.nodeInfo.gpu[nodePool.gpuType] <= node.allocatable.gpu)
+                  )) {
+                resultNodes[nodeId] = node.allocatable;
+              }
+            }
+
+            if (Object.keys(resultNodes).length !== 0) {
+              resultNodePool[nodePoolId] = {
+                gpuType: nodePool.gpuType,
+                osImage: nodePool.osImage,
+                nodes: resultNodes,
+              };
+            }
+          }
+        }
+
+        if (Object.keys(resultNodePool).length !== 0) {
+          res.push({
+            updatedAt: cluster.updatedAt,
+            address: cluster.params.address,
+            clusterName: cluster.params.clusterName,
+            nodePool: resultNodePool,
+          });
+        }
       }
     }
+
+    return res;
+  }
+
+  public async getWorkerList()
+    : Promise<Types.GetClusterListReturn[]> {
+    const res: Types.GetClusterListReturn[] = [];
+    let list;
+    const refPath = '/workerDocker/info';
 
     return res;
   }
