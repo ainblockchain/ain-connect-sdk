@@ -64,6 +64,7 @@ export type ClusterStatusParams = {
 export type PodStatusParams = {
   podName: string;
   namespaceId: string;
+  image: string;
   status: {
     phase: PodPhaseList;
     message?: string;
