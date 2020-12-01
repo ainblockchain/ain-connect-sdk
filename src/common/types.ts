@@ -81,6 +81,7 @@ export type SetPodStatusParams = {
   containerId: string;
   podId: string;
   podStatus: PodStatusParams;
+  image: string;
 }
 
 /* setContainerStatusForDocker */
