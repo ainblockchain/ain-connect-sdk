@@ -20,6 +20,13 @@ export type StorageStatus = 'failed' | 'pending' | 'createStorage' | 'success';
 
 export type ConditionType = 'Initialized' | 'Ready' | 'ContainersReady' | 'PodScheduled';
 
+export type Condition = {
+  type: ConditionType;
+  status: boolean;
+  reason?: string;
+  message?: string;
+};
+
 export type ListenMethodList = 'deploy' | 'redeploy' | 'undeploy'
  | 'deployForDocker' | 'undeployForDocker'
  | 'createNamespace' | 'deleteNamespace'
@@ -69,12 +76,7 @@ export type PodStatusParams = {
     phase: PodPhaseList;
     message?: string;
     startTime?: string;
-    condition?: {
-      type: ConditionType;
-      status: boolean;
-      reason?: string;
-      message?: string;
-    }
+    condition?: Condition;
   };
 }
 export type SetPodStatusParams = {
@@ -342,6 +344,7 @@ export type GetContainerStatusParams = {
 }
 export type GetContainerStatusReturn = {
   containerStatus: PodPhaseList;
+  condition?: Condition;
 } | null;
 
 /* getContainerStatusForDocker */

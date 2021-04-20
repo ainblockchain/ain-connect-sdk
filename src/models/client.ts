@@ -248,15 +248,17 @@ export default class Client {
     }
 
     let curStatus: Types.PodPhaseList = 'failed';
+    let condition;
     for (const podId of podIds) {
       const pod = snap.val()[podId];
       const podStatus = pod.params.status.phase;
       if (PodPhasePriority[curStatus] < PodPhasePriority[podStatus]) {
         curStatus = podStatus;
+        condition = pod.params.status.condition;
       }
     }
 
-    return { containerStatus: curStatus };
+    return JSON.parse(JSON.stringify({ containerStatus: curStatus, condition }));
   }
 
   public async getContainerStatusForDocker(params: Types.GetContainerStatusForDockerParams)
