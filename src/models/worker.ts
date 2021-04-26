@@ -23,7 +23,8 @@ export default class Worker {
     return this.wallet.getAddress();
   }
 
-  public async writeResult(result: any, dbpath: string) {
+  // default timeout: 30sec
+  public async writeResult(result: any, dbpath: string, timeout: number = 30000) {
     const data = this.wallet.signaturePayload({
       payload: JSON.stringify({
         updatedAt: this.firebase.getTimestamp(),
@@ -35,7 +36,7 @@ export default class Worker {
       dbpath,
     };
     await this.firebase.getInstance().functions()
-      .httpsCallable('sendTransaction')(reqMassage);
+      .httpsCallable('sendTransaction', { timeout })(reqMassage);
   }
 
   public listenRequest(methods: Types.workerListenMethod) {
@@ -75,13 +76,15 @@ export default class Worker {
       });
   }
 
-  public async deletePath(path: string) {
+  // default timeout: 30sec
+  public async deletePath(path: string, timeout: number = 30000) {
     const data = this.wallet.signaturePayload({ path });
     await this.firebase.getInstance().functions()
-      .httpsCallable('deleteTransaction')(data);
+      .httpsCallable('deleteTransaction', { timeout })(data);
   }
 
-  public async writeStatus(status: object, dbpath: string) {
+  // default timeout: 30sec
+  public async writeStatus(status: object, dbpath: string, timeout: number = 30000) {
     const data = this.wallet.signaturePayload({
       payload: JSON.stringify({
         updatedAt: this.firebase.getTimestamp(),
@@ -93,7 +96,7 @@ export default class Worker {
       dbpath,
     };
     await this.firebase.getInstance().functions()
-      .httpsCallable('sendTransaction')(reqMassage);
+      .httpsCallable('sendTransaction', { timeout })(reqMassage);
   }
 
   public async setClusterStatus(status: Types.ClusterStatusParams) {

@@ -20,7 +20,7 @@ export default class Firebase {
   }
 
   public getTimestamp() {
-    return firebase.database.ServerValue.TIMESTAMP;
+    return Date.now();
   }
 
   public getInstance(): firebase.app.App {
