@@ -138,6 +138,14 @@ export type RequestReturn<T> = {
   updatedAt: number;
 }
 
+export type StorageSpec = {
+  [storageId: string]: {
+    mountPath: string;
+    subPath?: string;
+    readOnly?: 0 | 1;
+  }
+}
+
 export type DeployParams = {
   targetAddress: string;
   clusterName: string;
@@ -146,13 +154,7 @@ export type DeployParams = {
   containerInfo: {
     imageName: string;
     nodePoolName: string;
-    storageSpec?: {
-      [storageId: string]: {
-        mountPath: string;
-        subPath?: string;
-        readOnly?: 0 | 1;
-      }
-    }
+    storageSpec?: StorageSpec;
     secretSpec?: {
       [secretId: string]: {
         mountPath: string;
@@ -192,6 +194,7 @@ export type RedeployParams = {
     imageName?: string;
     replicas?: number;
     env?: object;
+    storageSpec?: StorageSpec;
   }
 }
 
