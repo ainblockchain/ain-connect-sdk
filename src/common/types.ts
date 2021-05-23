@@ -207,6 +207,7 @@ export type UndeployParams = {
 
 /* DeployForDocker */
 export type DeployForDockerParams = {
+  publishPorts?: { [externalPort: string]: string },
   clusterName: string;
   targetAddress: string;
   image: string;
