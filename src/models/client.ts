@@ -116,6 +116,12 @@ export default class Client {
     return res;
   }
 
+  public async updateContainerStatus(params: Types.UpdateContainerStatusParams)
+    : Promise<Types.RequestReturn<null>> {
+    const res = await this.sendRequest('updateContainerStatus', params);
+    return res;
+  }
+
   /* Secret */
   public async createSecret(params: Types.CreateSecretParams)
     : Promise<Types.RequestReturn<null>> {

@@ -275,6 +275,13 @@ export type CreateSecretParams = {
   };
 }
 
+export type UpdateContainerStatusParams = {
+  targetAddress: string;
+  clusterName: string;
+  namespaceId: string;
+  containerId: string;
+}
+
 export type PutStorageToFtpParams = {
   targetAddress: string;
   clusterName: string;
