@@ -173,6 +173,7 @@ export type DeployParams = {
   maxDuration?: number;
   requestTimeout?: number;
   runningTimeout?: number;
+  strategy?: 'RollingUpdate' | 'Recreate';
 }
 
 export type DeployReturn = {
