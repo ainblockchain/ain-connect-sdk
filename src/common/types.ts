@@ -248,6 +248,7 @@ export type CreateStorageParams = {
   clusterName: string;
   namespaceId: string;
   capacity: number; // Gi
+  accessModes?: 'ReadWriteOnce' | 'ReadWriteMany',
   nfsInfo?: {
     server: string;
     path: string;
