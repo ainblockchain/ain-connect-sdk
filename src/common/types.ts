@@ -2,7 +2,7 @@ export interface RedisCallback {
   (err: Error | null, key: string | null, value: any): void
 }
 
-export type EnvType = 'prod' | 'staging';
+export type NetworkType = 'MAINNET' | 'TESTNET';
 export type FirebaseConfig = {
   apiKey: string;
   authDomain: string;

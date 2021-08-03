@@ -1,75 +1,110 @@
+declare global {
+  interface Window {
+    CloudConnect: any;
+  }
+}
+
 import { mnemonicToSeedSync } from 'bip39';
 import * as ainUtil from '@ainblockchain/ain-util';
 import AinJS from '@ainblockchain/ain-js';
+import { TransactionInput } from '@ainblockchain/ain-js/lib/types';
 import HDKey from 'hdkey';
 
-import { EnvType } from '../common/types';
+import { NetworkType } from '../common/types';
 import { MAINNET_PROVIDER_URL, TESTNET_PROVIDER_URL } from '../common/constants';
 
 export default class Wallet {
-  private wallet: any;
-
+  private initialized: boolean = false;
+  private wallet: any = null;
   private mnemonic: string;
-
-  private secretKey: string;
-
+  private privateKey: string;
   private address: string;
-
   private ainJs: AinJS;
+  private useExtension: boolean = false;
+  private connectExtension: any = null;
 
-  constructor(mnemonic: string, type: EnvType) {
-    const key = HDKey.fromMasterSeed(mnemonicToSeedSync(mnemonic));
-    this.wallet = key.derive("m/44'/412'/0'/0/0"); /* default wallet address for AIN */
-    this.mnemonic = mnemonic;
-    this.secretKey = `0x${this.wallet.privateKey.toString('hex')}`;
-    this.address = ainUtil.toChecksumAddress(`0x${ainUtil.pubToAddress(this.wallet.publicKey, true).toString('hex')}`);
+  public init(type?: NetworkType, mnemonic?: string): Wallet {
+    if (!type) {
+      // TODO: use AIN Connect Extension
+      this.useExtension = true;
+      window.addEventListener("scriptLoaded", async (event) => {
+        if (window.CloudConnect) {
+          this.connectExtension = window.CloudConnect;
+          // TODO: Get network type from extension
+          this.initialized = true;
+        } else {
+          // TODO: ERROR
+        }
+      });
+    } else if (mnemonic) {
+      this.useExtension = false;
+      this.ainJs = new AinJS(type === 'MAINNET' ?
+        MAINNET_PROVIDER_URL : TESTNET_PROVIDER_URL);
+      const key = HDKey.fromMasterSeed(mnemonicToSeedSync(mnemonic));
+      this.wallet = key.derive("m/44'/412'/0'/0/0"); /* default wallet address for AIN */
+      this.mnemonic = mnemonic;
+      this.privateKey = `0x${this.wallet.privateKey.toString('hex')}`;
+      this.address = ainUtil.toChecksumAddress(`0x${ainUtil.pubToAddress(this.wallet.publicKey, true).toString('hex')}`);
 
-    this.ainJs = new AinJS(type === 'prod' ? MAINNET_PROVIDER_URL : TESTNET_PROVIDER_URL);
-    this.ainJs.wallet.addFromHDWallet(mnemonic);
-    this.ainJs.wallet.setDefaultAccount(this.address);
+      this.ainJs.wallet.addFromHDWallet(mnemonic);
+      this.ainJs.wallet.setDefaultAccount(this.address);
+
+      this.initialized = true;
+    } else {
+      // ERROR
+      throw new Error('Cannot initialize Connect SDK');
+    }
+
+    return this;
   }
 
-  public getWallet() {
+  public isExtension = () => {
+    return this.useExtension;
+  }
+
+  public getWallet = () => {
     return this.wallet;
   }
 
-  public getMnemonic() {
+  public getMnemonic = () => {
     return this.mnemonic;
   }
 
-  public getSecretKey() {
-    return this.secretKey;
+  public getPrivateKey = () => {
+    return this.privateKey;
   }
 
-  public getAddress() {
+  public getAddress = () => {
     return this.address;
   }
 
-  public getAinJs() {
+  public getAinJs = () => {
     return this.ainJs;
   }
 
-  public signaturePayload(payload: object) {
-    // Remove undefined data
-    const data = payload;
-    const fields: ainUtil.Field[] = [];
-    Object.keys(data).forEach((name) => {
-      fields.push({
-        name,
-        default: Buffer.from([]),
-      });
-      if (typeof data[name] === 'object') {
-        data[name] = JSON.stringify(data[name]);
-      }
-    });
-    const signature = ainUtil.ecSignMessage(
-      ainUtil.serialize(data, fields), ainUtil.toBuffer(this.secretKey),
-    );
-    return {
-      payload: data,
-      signature,
-      fields,
-      address: this.address,
-    };
+  /* TransactionInput type
+   * {
+   *   parent_tx_hash?: string;
+   *   operation: {
+   *     type: SetOperationType;
+   *     ref: string;
+   *     value: any | undefined | null;
+   *     is_global?: boolean;
+   *   }: SetOperation | {
+   *     type: SetMultiOperationType;
+   *     op_list: SetOperation[];
+   *   }: SetMultiOperation 
+   *   nonce?: number;
+   *   address?: string;
+   *   timestamp?: number
+   * }
+   */
+  public sendTransaction = async (txInput: TransactionInput) => {
+    if (this.useExtension) {
+      // TODO: Update connectExtension sendTransaction
+      const res = await this.connectExtension.sendTransaction(txInput);
+    } else {
+      await this.ainJs.sendTransaction(txInput);
+    }
   }
 }
