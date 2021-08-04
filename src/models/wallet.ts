@@ -10,7 +10,7 @@ import AinJS from '@ainblockchain/ain-js';
 import { TransactionInput } from '@ainblockchain/ain-js/lib/types';
 import HDKey from 'hdkey';
 
-import { NetworkType } from '../common/types';
+import * as Types from '../common/types';
 import { MAINNET_PROVIDER_URL, TESTNET_PROVIDER_URL } from '../common/constants';
 
 export default class Wallet {
@@ -23,7 +23,7 @@ export default class Wallet {
   private useExtension: boolean = false;
   private connectExtension: any = null;
 
-  public init(type?: NetworkType, mnemonic?: string): Wallet {
+  public init(type?: Types.NetworkType, mnemonic?: string): Wallet {
     if (!type) {
       // TODO: use AIN Connect Extension
       this.useExtension = true;
@@ -106,5 +106,12 @@ export default class Wallet {
     } else {
       await this.ainJs.sendTransaction(txInput);
     }
+  }
+
+  public addEventListener = async (
+    path: string,
+    callback: Types.EventCallback
+  ) => {
+    // TODO: Event Listener for blockchain
   }
 }

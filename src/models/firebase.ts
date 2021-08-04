@@ -43,4 +43,11 @@ export default class Firebase {
     }
     await Axios.post(`${this.endpoint}/sendTransaction`, signedTx);
   }
+
+  public addEventListener = (
+    path: string,
+    callback: Types.EventCallback
+  ) => {
+    this.instance.database().ref(path).on('child_added', callback);
+  }
 }
