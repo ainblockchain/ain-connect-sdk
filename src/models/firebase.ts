@@ -39,7 +39,11 @@ export default class Firebase {
       const ainJs = this.wallet.getAinJs();
       const txBody = await ainJs.buildTransactionBody(txInput);
       const signature = ainJs.wallet.signTransaction(txBody);
-      signedTx = { signature, tx_body: txBody };
+      signedTx = {
+        signature,
+        tx_body: txBody,
+        address: this.wallet.getAddress(),
+      };
     }
     await Axios.post(`${this.endpoint}/sendTransaction`, signedTx);
   }
@@ -48,6 +52,12 @@ export default class Firebase {
     path: string,
     callback: Types.EventCallback
   ) => {
-    this.instance.database().ref(path).on('child_added', callback);
+    // TODO: event type?
+    this.instance.database().ref(path).on('child_added',
+      (snap) => callback(`${path}/${snap.key}`, snap.val()));
+  }
+
+  public get = async (path: string) => {
+    return await this.instance.database().ref(path).once('value');
   }
 }

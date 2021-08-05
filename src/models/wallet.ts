@@ -114,4 +114,8 @@ export default class Wallet {
   ) => {
     // TODO: Event Listener for blockchain
   }
+
+  public get = async (path: string) => {
+    return await this.ainJs.db.ref(path).getValue();
+  }
 }

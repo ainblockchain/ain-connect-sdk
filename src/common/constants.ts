@@ -15,5 +15,3 @@ export const TESTNET_FIREBASE_CONFIG = {
 
 export const MAINNET_PROVIDER_URL = 'http://node.ainetwork.ai:8080';
 export const TESTNET_PROVIDER_URL = 'http://node.ainetwork.ai:8080';
-
-export const PATH_PREFIX='/apps/collaborative_ai';
