@@ -43,3 +43,5 @@ export type WorkerRegisterParams = {
 export type WorkerStatusParams = {
   currentNumberOfContainer: number;
 }
+
+export type RequestType = 'START' | 'STOP';

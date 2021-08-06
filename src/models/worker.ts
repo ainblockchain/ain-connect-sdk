@@ -52,6 +52,7 @@ export default class Worker {
     callback: Types.EventCallback,
   ) => {
     const workerId = `${name}@${this.wallet.getAddress}`;
-    this.firebase.addEventListener(workerId, callback);
+    const path = Path.getWorkerRequestQueuePath(workerId);
+    this.firebase.addEventListener(path, callback);
   }
 }

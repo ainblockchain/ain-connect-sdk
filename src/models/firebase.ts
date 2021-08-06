@@ -20,7 +20,7 @@ export default class Firebase {
     this.instance = firebase.initializeApp(firebaseConfig);
     this.endpoint = (type === 'MAINNET') ?
         'https://' :
-        'https://';
+        'https://us-central1-gpt2-ainetwork.cloudfunctions.net';
   }
 
   public getInstance(): firebase.app.App {
@@ -42,10 +42,10 @@ export default class Firebase {
       signedTx = {
         signature,
         tx_body: txBody,
-        address: this.wallet.getAddress(),
       };
     }
-    await Axios.post(`${this.endpoint}/sendTransaction`, signedTx);
+    await this.instance.functions()
+      .httpsCallable('sendSignedTransaction')(signedTx);
   }
 
   public addEventListener = (

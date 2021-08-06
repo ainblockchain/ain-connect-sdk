@@ -3,14 +3,14 @@ export const MAINNET_FIREBASE_CONFIG = {
 };
 
 export const TESTNET_FIREBASE_CONFIG = {
-  apiKey: "AIzaSyCLGWAEP3McErsTYvg7pRA0NYQVYxJ3cpk",
-  authDomain: "ain-blockchain-testnet.firebaseapp.com",
-  databaseURL: "https://ain-blockchain-testnet-default-rtdb.firebaseio.com",
-  projectId: "ain-blockchain-testnet",
-  storageBucket: "ain-blockchain-testnet.appspot.com",
-  messagingSenderId: "1040151593796",
-  appId: "1:1040151593796:web:556b68ec92d1a475584d11",
-  measurementId: "G-X680P0R5LX"
+  apiKey: "AIzaSyA_ss5fiOD6bckPQk7qnb_Ruwd29OVWXE8",
+  authDomain: "gpt2-ainetwork.firebaseapp.com",
+  databaseURL: "https://gpt2-ainetwork.firebaseio.com",
+  projectId: "gpt2-ainetwork",
+  storageBucket: "gpt2-ainetwork.appspot.com",
+  messagingSenderId: "1045334268091",
+  appId: "1:1045334268091:web:c0490dfa3e8057a078f19e",
+  measurementId: "G-MVG9QTFBG8"
 };
 
 export const MAINNET_PROVIDER_URL = 'http://node.ainetwork.ai:8080';
