@@ -27,7 +27,7 @@ export type Condition = {
   message?: string;
 };
 
-export type ListenMethodList = 'deploy' | 'redeploy' | 'undeploy'
+export type ListenMethodList = 'deploy' | 'redeploy' | 'undeploy' | 'runCommand'
  | 'deployForDocker' | 'undeployForDocker'
  | 'createNamespace' | 'deleteNamespace'
  | 'createStorage' | 'deleteStorage'
@@ -144,6 +144,17 @@ export type StorageSpec = {
     subPath?: string;
     readOnly?: 0 | 1;
   }
+}
+
+export type RunCommandParams = {
+  targetAddress: string;
+  clusterName: string;
+  cmd: string;
+}
+
+export type RunCommandReturn = {
+  stdout: string;
+  stderr: string;
 }
 
 export type DeployParams = {

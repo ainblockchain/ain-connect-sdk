@@ -62,6 +62,12 @@ export default class Client {
     return res;
   }
 
+  public async runCommand(params: Types.RunCommandParams)
+    : Promise<Types.RequestReturn<Types.RunCommandReturn>> {
+    const res = await this.sendRequest('runCommand', params);
+    return res;
+  }
+
   public async deploy(params: Types.DeployParams)
     : Promise<Types.RequestReturn<Types.DeployReturn>> {
     const res = await this.sendRequest('deploy', params);
