@@ -7,6 +7,7 @@ import * as error from '../common/error';
 import * as Path from '../common/path';
 
 export default class Worker {
+  private name: string;
   private wallet: Wallet;
   private firebase: Firebase;
 
@@ -19,6 +20,7 @@ export default class Worker {
     name: string,
     params: Types.WorkerRegisterParams
   ) => {
+    this.name = name;
     const { ainAddress, ethAddress, containerSpec, labels } = params;
     if (ainAddress !== this.wallet.getAddress()) {
       throw new Error('Address not matched');
@@ -36,10 +38,9 @@ export default class Worker {
   }
 
   public updateStatus = async (
-    name: string,
     status: Types.WorkerStatusParams,
   ) => {
-    const workerId = `${name}@${this.wallet.getAddress()}`;
+    const workerId = `${this.name}@${this.wallet.getAddress()}`;
     const txInput: TransactionInput = {
       operation: {
         type: 'SET_VALUE',
@@ -52,21 +53,19 @@ export default class Worker {
   }
 
   public listenRequestQueue = async (
-    name: string,
     callback: Types.EventCallback,
   ) => {
-    const workerId = `${name}@${this.wallet.getAddress()}`;
+    const workerId = `${this.name}@${this.wallet.getAddress()}`;
     const path = Path.getWorkerRequestQueuePath(workerId);
     this.firebase.addEventListener(path, callback);
   }
 
   public sendResponse = async (
-    name: string,
     requestId: string,
     requestAddress: string,
-    response: any,
+    response: Types.WorkerResponseType,
   ) => {
-    const workerId = `${name}@${this.wallet.getAddress()}`;
+    const workerId = `${this.name}@${this.wallet.getAddress()}`;
     // XXX: workerId in payload?
     response['workerId'] = workerId;
     const txInput: TransactionInput = {

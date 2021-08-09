@@ -45,3 +45,8 @@ export type WorkerStatusParams = {
 }
 
 export type RequestType = 'START' | 'STOP';
+
+export type WorkerResponseType = {
+  data?: any,
+  errorMessage?: string,
+}
