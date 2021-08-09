@@ -35,7 +35,7 @@ export default class Worker {
     name: string,
     status: Types.WorkerStatusParams,
   ) => {
-    const workerId = `${name}@${this.wallet.getAddress}`;
+    const workerId = `${name}@${this.wallet.getAddress()}`;
     const txInput: TransactionInput = {
       operation: {
         type: 'SET_VALUE',
@@ -51,8 +51,28 @@ export default class Worker {
     name: string,
     callback: Types.EventCallback,
   ) => {
-    const workerId = `${name}@${this.wallet.getAddress}`;
+    const workerId = `${name}@${this.wallet.getAddress()}`;
     const path = Path.getWorkerRequestQueuePath(workerId);
     this.firebase.addEventListener(path, callback);
+  }
+
+  public sendResponse = async (
+    name: string,
+    requestId: string,
+    requestAddress: string,
+    response: any,
+  ) => {
+    const workerId = `${name}@${this.wallet.getAddress()}`;
+    // XXX: workerId in payload?
+    response['workerId'] = workerId;
+    const txInput: TransactionInput = {
+      operation: {
+        type: 'SET_VALUE',
+        ref: `${Path.getUserResponseQueuePath(requestAddress)}/${requestId}`,
+        value: response,
+      },
+      address: this.wallet.getAddress(),
+    }
+    await this.firebase.sendTransaction(txInput);
   }
 }
