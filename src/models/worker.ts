@@ -20,6 +20,10 @@ export default class Worker {
     params: Types.WorkerRegisterParams
   ) => {
     const { ainAddress, ethAddress, containerSpec, labels } = params;
+    if (ainAddress !== this.wallet.getAddress()) {
+      throw new Error('Address not matched');
+    }
+
     const txInput: TransactionInput = {
       operation: {
         type: 'SET_VALUE',
