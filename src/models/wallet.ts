@@ -1,9 +1,3 @@
-declare global {
-  interface Window {
-    CloudConnect: any;
-  }
-}
-
 import { mnemonicToSeedSync } from 'bip39';
 import * as ainUtil from '@ainblockchain/ain-util';
 import AinJS from '@ainblockchain/ain-js';
@@ -12,6 +6,12 @@ import HDKey from 'hdkey';
 
 import * as Types from '../common/types';
 import { MAINNET_PROVIDER_URL, TESTNET_PROVIDER_URL } from '../common/constants';
+
+declare global {
+  interface Window {
+    CloudConnect: any;
+  }
+}
 
 export default class Wallet {
   private initialized: boolean = false;
@@ -27,7 +27,7 @@ export default class Wallet {
     if (!type) {
       // TODO: use AIN Connect Extension
       this.useExtension = true;
-      window.addEventListener("scriptLoaded", async (event) => {
+      window.addEventListener('scriptLoaded', async (event) => {
         if (window.CloudConnect) {
           this.connectExtension = window.CloudConnect;
           // TODO: Get network type from extension
@@ -38,8 +38,8 @@ export default class Wallet {
       });
     } else if (mnemonic) {
       this.useExtension = false;
-      this.ainJs = new AinJS(type === 'MAINNET' ?
-        MAINNET_PROVIDER_URL : TESTNET_PROVIDER_URL);
+      this.ainJs = new AinJS(type === 'MAINNET'
+        ? MAINNET_PROVIDER_URL : TESTNET_PROVIDER_URL);
       const key = HDKey.fromMasterSeed(mnemonicToSeedSync(mnemonic));
       this.wallet = key.derive("m/44'/412'/0'/0/0"); /* default wallet address for AIN */
       this.mnemonic = mnemonic;
@@ -58,29 +58,12 @@ export default class Wallet {
     return this;
   }
 
-  public isExtension = () => {
-    return this.useExtension;
-  }
-
-  public getWallet = () => {
-    return this.wallet;
-  }
-
-  public getMnemonic = () => {
-    return this.mnemonic;
-  }
-
-  public getPrivateKey = () => {
-    return this.privateKey;
-  }
-
-  public getAddress = () => {
-    return this.address;
-  }
-
-  public getAinJs = () => {
-    return this.ainJs;
-  }
+  public isExtension = () => this.useExtension;
+  public getWallet = () => this.wallet;
+  public getMnemonic = () => this.mnemonic;
+  public getPrivateKey = () => this.privateKey;
+  public getAddress = () => this.address;
+  public getAinJs = () => this.ainJs;
 
   /* TransactionInput type
    * {
@@ -93,7 +76,7 @@ export default class Wallet {
    *   }: SetOperation | {
    *     type: SetMultiOperationType;
    *     op_list: SetOperation[];
-   *   }: SetMultiOperation 
+   *   }: SetMultiOperation
    *   nonce?: number;
    *   address?: string;
    *   timestamp?: number
@@ -110,12 +93,13 @@ export default class Wallet {
 
   public addEventListener = async (
     path: string,
-    callback: Types.EventCallback
+    callback: Types.EventCallback,
   ) => {
     // TODO: Event Listener for blockchain
   }
 
   public get = async (path: string) => {
-    return await this.ainJs.db.ref(path).getValue();
+    const value = await this.ainJs.db.ref(path).getValue();
+    return value;
   }
 }

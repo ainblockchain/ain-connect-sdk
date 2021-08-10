@@ -18,10 +18,12 @@ export default class Worker {
 
   public register = async (
     name: string,
-    params: Types.WorkerRegisterParams
+    params: Types.WorkerRegisterParams,
   ) => {
     this.name = name;
-    const { ainAddress, ethAddress, containerSpec, labels } = params;
+    const {
+      ainAddress, ethAddress, containerSpec, labels,
+    } = params;
     if (ainAddress !== this.wallet.getAddress()) {
       throw new Error('Address not matched');
     }
@@ -33,7 +35,7 @@ export default class Worker {
         value: params,
       },
       address: this.wallet.getAddress(),
-    }
+    };
     await this.firebase.sendTransaction(txInput);
   }
 
@@ -48,7 +50,7 @@ export default class Worker {
         value: status,
       },
       address: this.wallet.getAddress(),
-    }
+    };
     await this.firebase.sendTransaction(txInput);
   }
 
@@ -75,7 +77,7 @@ export default class Worker {
         value: response,
       },
       address: this.wallet.getAddress(),
-    }
+    };
     await this.firebase.sendTransaction(txInput);
   }
 }

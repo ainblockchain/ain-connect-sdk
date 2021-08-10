@@ -44,7 +44,11 @@ export type WorkerStatusParams = {
   currentNumberOfContainer: number;
 }
 
-export type RequestType = 'START' | 'STOP';
+export type RequestPayloadType = {
+  requestType: string;
+  params: any;
+  userAinAddress: string;
+}
 
 export type WorkerResponseType = {
   data?: any,
