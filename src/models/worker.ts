@@ -11,16 +11,15 @@ export default class Worker {
   private wallet: Wallet;
   private firebase: Firebase;
 
-  constructor(type: Types.NetworkType, mnemonic: string) {
+  constructor(type: Types.NetworkType, mnemonic: string, name: string) {
     this.wallet = new Wallet().init(type, mnemonic);
     this.firebase = new Firebase(type, this.wallet);
+    this.name = name;
   }
 
   public register = async (
-    name: string,
     params: Types.WorkerRegisterParams,
   ) => {
-    this.name = name;
     const {
       ainAddress, ethAddress, containerSpec, labels,
     } = params;
@@ -31,7 +30,7 @@ export default class Worker {
     const txInput: TransactionInput = {
       operation: {
         type: 'SET_VALUE',
-        ref: Path.getWorkerRegisterPath(name, ainAddress),
+        ref: Path.getWorkerRegisterPath(this.name, ainAddress),
         value: params,
       },
       address: this.wallet.getAddress(),
