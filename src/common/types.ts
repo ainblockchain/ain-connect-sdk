@@ -19,14 +19,14 @@ export type ContainerSpec = {
   };
   gpu: {
     name: string;
-    memory: number;
+    memoryGB: number;
     count: number;
   };
   memory: {
-    max: number;
+    maxGB: number;
   };
   storage: {
-    max: number;
+    maxGB: number;
   };
   maxNumberOfContainer: number;
 }
