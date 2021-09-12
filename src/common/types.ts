@@ -350,7 +350,7 @@ export type GetClusterListReturn = {
 
 export type StatusGetterReturn<T> = {
   updatedAt: number;
-  status: T;
+  params: T;
 } | null;
 
 /* getClusterStatus */

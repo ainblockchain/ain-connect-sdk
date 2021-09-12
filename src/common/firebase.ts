@@ -8,7 +8,7 @@ import * as Types from './types';
 export default class Firebase {
   private instance: firebase.app.App;
 
-  constructor(env: Types.EnvType, config?: Types.FirebaseConfig) {
+  constructor(env: Types.EnvType, config?: Types.FirebaseConfig, appName?: string) {
     let firebaseConfig;
     if (config) {
       firebaseConfig = config;
@@ -16,7 +16,7 @@ export default class Firebase {
       firebaseConfig = (env === 'prod')
         ? constants.PROD_FIREBASE_CONFIG : constants.STAGING_FIREBASE_CONFIG;
     }
-    this.instance = firebase.initializeApp(firebaseConfig);
+    this.instance = firebase.initializeApp(firebaseConfig, appName);
   }
 
   public getTimestamp() {
