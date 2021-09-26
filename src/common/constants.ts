@@ -1,5 +1,12 @@
 export const MAINNET_FIREBASE_CONFIG = {
-  // TODO
+  apiKey: 'AIzaSyCaNna60wsEWDYhAleGVj5jjp3-24GCtN0',
+  authDomain: 'gpt2-ainetwork-prod.firebaseapp.com',
+  databaseURL: 'https://gpt2-ainetwork-prod.firebaseio.com',
+  projectId: 'gpt2-ainetwork-prod',
+  storageBucket: 'gpt2-ainetwork-prod.appspot.com',
+  messagingSenderId: '983388933112',
+  appId: '1:983388933112:web:50fe344b8afb049f9e240d',
+  measurementId: 'G-Q2GFZYSWVW',
 };
 
 export const TESTNET_FIREBASE_CONFIG = {

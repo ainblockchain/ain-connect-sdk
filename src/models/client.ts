@@ -1,7 +1,6 @@
 import { TransactionInput } from '@ainblockchain/ain-js/lib/types';
 import { customAlphabet } from 'nanoid';
-import Firebase from './firebase';
-import Wallet from './wallet';
+import Connect from './connect';
 import * as Types from '../common/types';
 import * as Path from '../common/path';
 
@@ -11,51 +10,56 @@ function getRandomRequestId() {
 }
 
 export default class Client {
-  private wallet: Wallet;
-  private firebase: Firebase;
+  private connect: Connect;
 
   constructor(type: Types.NetworkType, mnemonic: string) {
-    this.wallet = new Wallet().init(type, mnemonic);
-    this.firebase = new Firebase(type, this.wallet);
+    this.connect = new Connect(type, mnemonic);
   }
 
   public sendRequest = async (
-    workerId: string,
-    payload: Types.RequestPayloadType,
+    name: string,
+    address: string,
+    value: Types.SendRequestValue,
   ): Promise<string> => {
     const requestId = getRandomRequestId();
     const txInput: TransactionInput = {
       operation: {
         type: 'SET_VALUE',
-        ref: `${Path.getWorkerRequestQueuePath(workerId)}/${requestId}`,
-        value: payload,
+        ref: `${Path.getWorkerRequestQueuePathWithPrefixPath(name, address)}/${requestId}`,
+        value: {
+          ...value,
+          userAinAddress: this.connect.getAddress(),
+        },
       },
-      address: this.wallet.getAddress(),
+      address: this.connect.getAddress(),
     };
-    await this.firebase.sendTransaction(txInput);
+    await this.connect.sendTransaction(txInput);
     return requestId;
   }
 
-  public listenResponseQueue = async (
-    callback: Types.EventCallback,
+  public listenResponseQueue = (
+    callback: Types.ResponseEventCallback,
   ) => {
-    const address = this.wallet.getAddress();
+    const address = this.connect.getAddress();
     const path = Path.getUserResponseQueuePath(address);
-    this.firebase.addEventListener(path, callback);
+    this.connect.addEventListener(path, callback);
   }
 
   public getWorkerList = async (
-  ): Promise<{[workerId: string]: Types.ContainerSpec}> => {
+  ): Promise<Types.WorkerInfo> => {
     // TODO: worker filter option?
-    const res = await this.firebase.get(Path.getWorkerListPath());
-    return res.val();
+    const res = await this.connect.get(Path.WORKER_LIST_PATH);
+    return res;
   }
 
   public getWorkerStatus = async (
-    workerId: string,
+    name: string,
+    address: string,
   ): Promise<Types.WorkerStatusParams> => {
-    const path = Path.getWorkerStatusPath(workerId);
-    const res = await this.firebase.get(path);
-    return res.val();
+    const path = Path.getWorkerStatusPath(name, address);
+    const res = await this.connect.get(path);
+    return res;
   }
+
+  public getConnect = () => this.connect;
 }

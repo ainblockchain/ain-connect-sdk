@@ -1,4 +1,5 @@
 export type NetworkType = 'MAINNET' | 'TESTNET';
+
 export type FirebaseConfig = {
   apiKey: string;
   authDomain: string;
@@ -10,8 +11,6 @@ export type FirebaseConfig = {
   measurementId: string;
 }
 
-export type EventCallback = (ref: string, value: any) => void;
-
 export type ContainerSpec = {
   cpu: {
     name: string;
@@ -21,7 +20,7 @@ export type ContainerSpec = {
     name: string;
     memoryGB: number;
     count: number;
-  };
+  } | null;
   memory: {
     maxGB: number;
   };
@@ -30,27 +29,41 @@ export type ContainerSpec = {
   };
   maxNumberOfContainer: number;
 }
+
 export type WorkerRegisterLabel = {
-  managedBy?: string;
+  [key: string]: string;
 }
+
 export type WorkerRegisterParams = {
-  ainAddress: string;
   ethAddress: string;
-  containerSpec: ContainerSpec;
-  labels?: WorkerRegisterLabel;
+  containerSpec: ContainerSpec | null;
+  labels: WorkerRegisterLabel | null;
+}
+
+export type WorkerInfo = {
+  [workerId: string]: WorkerRegisterParams;
 }
 
 export type WorkerStatusParams = {
   currentNumberOfContainer: number;
 }
 
-export type RequestPayloadType = {
+export type EventCallback = (ref: string, value: any) => void;
+
+export type SendRequestValue = {
   requestType: string;
   params: any;
-  userAinAddress: string;
 }
 
-export type WorkerResponseType = {
+export type ListenRequestQueueValue = SendRequestValue & { userAinAddress: string };
+
+export type RequestEventCallback = (ref: string, value: ListenRequestQueueValue) => void;
+
+export type SendResponseValue = {
   data?: any,
   errorMessage?: string,
 }
+
+export type ListenResponseQueueValue = SendResponseValue & { workerId: string };
+
+export type ResponseEventCallback = (ref: string, value: ListenResponseQueueValue) => void;

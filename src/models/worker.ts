@@ -1,82 +1,71 @@
 import { TransactionInput } from '@ainblockchain/ain-js/lib/types';
-
-import Wallet from './wallet';
-import Firebase from './firebase';
+import Connect from './connect';
 import * as Types from '../common/types';
-import * as error from '../common/error';
 import * as Path from '../common/path';
 
 export default class Worker {
   private name: string;
-  private wallet: Wallet;
-  private firebase: Firebase;
+  private connect: Connect;
 
   constructor(type: Types.NetworkType, mnemonic: string, name: string) {
-    this.wallet = new Wallet().init(type, mnemonic);
-    this.firebase = new Firebase(type, this.wallet);
+    this.connect = new Connect(type, mnemonic);
     this.name = name;
   }
 
   public register = async (
     params: Types.WorkerRegisterParams,
   ) => {
-    const {
-      ainAddress, ethAddress, containerSpec, labels,
-    } = params;
-    if (ainAddress !== this.wallet.getAddress()) {
-      throw new Error('Address not matched');
-    }
-
     const txInput: TransactionInput = {
       operation: {
         type: 'SET_VALUE',
-        ref: Path.getWorkerRegisterPath(this.name, ainAddress),
+        ref: Path.getWorkerRegisterWithPrefixPath(this.name, this.connect.getAddress()),
         value: params,
       },
-      address: this.wallet.getAddress(),
+      address: this.connect.getAddress(),
     };
-    await this.firebase.sendTransaction(txInput);
+    await this.connect.sendTransaction(txInput);
   }
 
   public updateStatus = async (
     status: Types.WorkerStatusParams,
   ) => {
-    const workerId = `${this.name}@${this.wallet.getAddress()}`;
+    const address = this.connect.getAddress();
     const txInput: TransactionInput = {
       operation: {
         type: 'SET_VALUE',
-        ref: Path.getWorkerStatusPath(workerId),
+        ref: Path.getWorkerStatusWithPrefixPath(this.name, address),
         value: status,
       },
-      address: this.wallet.getAddress(),
+      address,
     };
-    await this.firebase.sendTransaction(txInput);
+    await this.connect.sendTransaction(txInput);
   }
 
-  public listenRequestQueue = async (
-    callback: Types.EventCallback,
+  public listenRequestQueue = (
+    callback: Types.RequestEventCallback,
   ) => {
-    const workerId = `${this.name}@${this.wallet.getAddress()}`;
-    const path = Path.getWorkerRequestQueuePath(workerId);
-    this.firebase.addEventListener(path, callback);
+    const path = Path.getWorkerRequestQueuePath(this.name, this.connect.getAddress());
+    this.connect.addEventListener(path, callback);
   }
 
   public sendResponse = async (
     requestId: string,
     requestAddress: string,
-    response: Types.WorkerResponseType,
+    value: Types.SendResponseValue,
   ) => {
-    const workerId = `${this.name}@${this.wallet.getAddress()}`;
-    // XXX: workerId in payload?
-    response['workerId'] = workerId;
     const txInput: TransactionInput = {
       operation: {
         type: 'SET_VALUE',
-        ref: `${Path.getUserResponseQueuePath(requestAddress)}/${requestId}`,
-        value: response,
+        ref: `${Path.getUserResponseQueueWithPrefixPath(requestAddress)}/${requestId}`,
+        value: {
+          ...value,
+          workerId: `${this.name}@${this.connect.getAddress()}`,
+        },
       },
-      address: this.wallet.getAddress(),
+      address: this.connect.getAddress(),
     };
-    await this.firebase.sendTransaction(txInput);
+    await this.connect.sendTransaction(txInput);
   }
+
+  public getConnect = () => this.connect;
 }
