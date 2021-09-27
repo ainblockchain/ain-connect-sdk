@@ -46,6 +46,9 @@ export type WorkerInfo = {
 
 export type WorkerStatusParams = {
   currentNumberOfContainer: number;
+  containerStatus: {
+    [containerId: string]: string;
+  },
 }
 
 export type EventCallback = (ref: string, value: any) => void;

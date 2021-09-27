@@ -11,6 +11,12 @@ export const getWorkerStatusPath = (
   address: string,
 ) => `${WORKER_LIST_PATH}/${getWorkerId(name, address)}/status`;
 
+export const getContainerStatusPath = (
+  name: string,
+  address: string,
+  containerId: string,
+) => `${getWorkerStatusPath(name, address)}/containerStatus/${containerId}`;
+
 export const getWorkerRegisterWithPrefixPath = (
   name: string,
   address: string,

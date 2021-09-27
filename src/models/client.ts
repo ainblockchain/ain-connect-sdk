@@ -61,5 +61,15 @@ export default class Client {
     return res;
   }
 
+  public getContainerStatus = async (
+    name: string,
+    address: string,
+    containerId: string,
+  ): Promise<Types.WorkerStatusParams> => {
+    const path = Path.getContainerStatusPath(name, address, containerId);
+    const res = await this.connect.get(path);
+    return res;
+  }
+
   public getConnect = () => this.connect;
 }
