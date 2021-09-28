@@ -19,6 +19,16 @@ export default class Connect {
   private address: string;
   private ainJs: AinJS;
 
+  static getWalletInfo(mnemonic: string) {
+    const key = HDKey.fromMasterSeed(mnemonicToSeedSync(mnemonic));
+    const wallet = key.derive("m/44'/412'/0'/0/0"); /* default wallet address for AIN */
+    return {
+      wallet,
+      privateKey: `0x${wallet.privateKey.toString('hex')}`,
+      address: ainUtil.toChecksumAddress(`0x${ainUtil.pubToAddress(wallet.publicKey, true).toString('hex')}`),
+    };
+  }
+
   constructor(type: Types.NetworkType, mnemonic: string) {
     const firebaseConfig = (type === 'MAINNET')
       ? Const.MAINNET_FIREBASE_CONFIG
@@ -27,11 +37,11 @@ export default class Connect {
 
     this.ainJs = new AinJS(type === 'MAINNET'
       ? Const.MAINNET_PROVIDER_URL : Const.TESTNET_PROVIDER_URL);
-    const key = HDKey.fromMasterSeed(mnemonicToSeedSync(mnemonic));
-    this.wallet = key.derive("m/44'/412'/0'/0/0"); /* default wallet address for AIN */
+    const walletInfo = Connect.getWalletInfo(mnemonic);
+    this.wallet = walletInfo.wallet;
     this.mnemonic = mnemonic;
-    this.privateKey = `0x${this.wallet.privateKey.toString('hex')}`;
-    this.address = ainUtil.toChecksumAddress(`0x${ainUtil.pubToAddress(this.wallet.publicKey, true).toString('hex')}`);
+    this.privateKey = walletInfo.privateKey;
+    this.address = walletInfo.address;
 
     this.ainJs.wallet.addFromHDWallet(mnemonic);
     this.ainJs.wallet.setDefaultAccount(this.address);
