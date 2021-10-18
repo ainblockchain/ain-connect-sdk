@@ -29,14 +29,27 @@ export default class Connect {
     };
   }
 
-  constructor(type: Types.NetworkType, mnemonic: string) {
+  static getProviderUrl(type: Types.NetworkType, port?: number): string {
+    const portStr = port ? `:${port}` : '';
+    switch (type) {
+      case 'MAINNET':
+        return `${Const.MAINNET_PROVIDER_URL}${portStr}`;
+      case 'DEVNET':
+      case 'TESTNET':
+        return `${Const.TESTNET_PROVIDER_URL}${portStr}`;
+      case 'LOCAL':
+      default:
+        return `${Const.LOCAL_PROVIDER_URL}${portStr}`;
+    }
+  }
+
+  constructor(type: Types.NetworkType, mnemonic: string, port?: number) {
     const firebaseConfig = (type === 'MAINNET')
       ? Const.MAINNET_FIREBASE_CONFIG
       : Const.TESTNET_FIREBASE_CONFIG;
     this.app = firebase.initializeApp(firebaseConfig);
 
-    this.ainJs = new AinJS(type === 'MAINNET'
-      ? Const.MAINNET_PROVIDER_URL : Const.TESTNET_PROVIDER_URL);
+    this.ainJs = new AinJS(Connect.getProviderUrl(type, port));
     const walletInfo = Connect.getWalletInfo(mnemonic);
     this.wallet = walletInfo.wallet;
     this.mnemonic = mnemonic;

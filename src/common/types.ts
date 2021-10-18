@@ -1,4 +1,4 @@
-export type NetworkType = 'MAINNET' | 'TESTNET';
+export type NetworkType = 'MAINNET' | 'DEVNET' | 'TESTNET' | 'LOCAL';
 
 export type FirebaseConfig = {
   apiKey: string;
