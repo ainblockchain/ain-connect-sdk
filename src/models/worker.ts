@@ -7,8 +7,8 @@ export default class Worker {
   private name: string;
   private connect: Connect;
 
-  constructor(type: Types.NetworkType, mnemonic: string, name: string) {
-    this.connect = new Connect(type, mnemonic);
+  constructor(type: Types.NetworkType, mnemonic: string, name: string, port?: number) {
+    this.connect = new Connect(type, mnemonic, port);
     this.name = name;
   }
 
