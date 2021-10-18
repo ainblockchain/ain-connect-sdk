@@ -50,7 +50,7 @@ export default class Worker {
       const responsePath = `${Path.getUserResponseQueuePath(value.userAinAddress)}/${requestId}`;
       const responseData = await this.connect.get(responsePath);
       if (!responseData) {
-        await callback(ref, value);
+        callback(ref, value);
       }
     });
   }
