@@ -1,6 +1,6 @@
 {
   "name": "@ainblockchain/connect-sdk",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "description": "SDK for AIN Connect functionality",
   "repository": {
     "type": "git",
