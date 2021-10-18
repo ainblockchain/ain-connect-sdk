@@ -9,7 +9,7 @@ import AinJS from '@ainblockchain/ain-js';
 import HDKey from 'hdkey';
 
 import * as Const from '../common/constants';
-import * as Types from '../common/types';
+import { NetworkType, EventCallback } from '../common/types';
 
 export default class Connect {
   private app: firebase.app.App;
@@ -29,22 +29,22 @@ export default class Connect {
     };
   }
 
-  static getProviderUrl(type: Types.NetworkType, port?: number): string {
+  static getProviderUrl(type: NetworkType, port?: number): string {
     const portStr = port ? `:${port}` : '';
     switch (type) {
-      case 'MAINNET':
+      case NetworkType.MAINNET:
         return `${Const.MAINNET_PROVIDER_URL}${portStr}`;
-      case 'DEVNET':
-      case 'TESTNET':
+      case NetworkType.DEVNET:
+      case NetworkType.TESTNET:
         return `${Const.TESTNET_PROVIDER_URL}${portStr}`;
-      case 'LOCAL':
+      case NetworkType.LOCAL:
       default:
         return `${Const.LOCAL_PROVIDER_URL}${portStr}`;
     }
   }
 
-  constructor(type: Types.NetworkType, mnemonic: string, port?: number) {
-    const firebaseConfig = (type === 'MAINNET')
+  constructor(type: NetworkType, mnemonic: string, port?: number) {
+    const firebaseConfig = (type === NetworkType.MAINNET)
       ? Const.MAINNET_FIREBASE_CONFIG
       : Const.TESTNET_FIREBASE_CONFIG;
     this.app = firebase.initializeApp(firebaseConfig);
@@ -77,7 +77,7 @@ export default class Connect {
 
   public addEventListener = (
     path: string,
-    callback: Types.EventCallback,
+    callback: EventCallback,
   ) => {
     // TODO: 처리된 event들에 대해선 callback 발생하지 않도록
     this.app.database().ref(path).on('child_added',
