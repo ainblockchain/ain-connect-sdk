@@ -70,7 +70,7 @@ export default class Connect {
         tx_body: txBody,
       });
 
-    if (!result.data) {
+    if (result.data && result.data.error_message) {
       throw Error(`[code:${result.data.code}]: ${result.data.error_message}`);
     }
   }
