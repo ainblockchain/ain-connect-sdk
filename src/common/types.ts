@@ -49,6 +49,7 @@ export type WorkerStatusParams = {
   containerInfo: {
     [containerId: string]: {
       status: string;
+      statusCode?: string;
       imagePath: string;
       ports: number[];
     };
