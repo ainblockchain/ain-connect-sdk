@@ -33,8 +33,11 @@ export default class Connect {
     const firebaseConfig = (type === 'MAINNET')
       ? Const.MAINNET_FIREBASE_CONFIG
       : Const.TESTNET_FIREBASE_CONFIG;
-    this.app = firebase.initializeApp(firebaseConfig);
-
+    if (!firebase.apps.length) {
+      this.app = firebase.initializeApp(firebaseConfig);
+    } else {
+      this.app = firebase.app();
+    }
     this.ainJs = new AinJS(type === 'MAINNET'
       ? Const.MAINNET_PROVIDER_URL : Const.TESTNET_PROVIDER_URL);
     const walletInfo = Connect.getWalletInfo(mnemonic);

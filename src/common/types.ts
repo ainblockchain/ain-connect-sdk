@@ -46,8 +46,12 @@ export type WorkerInfo = {
 
 export type WorkerStatusParams = {
   currentNumberOfContainer: number;
-  containerStatus: {
-    [containerId: string]: string;
+  containerInfo: {
+    [containerId: string]: {
+      status: string;
+      imagePath: string;
+      ports: number[];
+    };
   },
 }
 
