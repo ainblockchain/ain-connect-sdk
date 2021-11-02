@@ -1,4 +1,9 @@
-export type NetworkType = 'MAINNET' | 'TESTNET';
+export const enum NetworkType {
+  MAINNET = 'MAINNET',
+  DEVNET = 'DEVNET',
+  TESTNET = 'TESTNET',
+  LOCAL = 'LOCAL'
+}
 
 export type FirebaseConfig = {
   apiKey: string;

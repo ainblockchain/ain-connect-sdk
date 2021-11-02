@@ -20,8 +20,9 @@ export const TESTNET_FIREBASE_CONFIG = {
   measurementId: 'G-MVG9QTFBG8',
 };
 
-export const MAINNET_PROVIDER_URL = 'http://node.ainetwork.ai:8080';
-export const TESTNET_PROVIDER_URL = 'http://node.ainetwork.ai:8080';
+export const MAINNET_PROVIDER_URL = 'http://node.ainetwork.ai';
+export const TESTNET_PROVIDER_URL = 'http://node.ainetwork.ai';
+export const LOCAL_PROVIDER_URL = 'http://localhost';
 
 // temporary
 export const MAINNET_FIREBASE_ENDPOINT = '';

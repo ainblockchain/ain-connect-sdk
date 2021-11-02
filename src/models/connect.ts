@@ -9,7 +9,7 @@ import AinJS from '@ainblockchain/ain-js';
 import HDKey from 'hdkey';
 
 import * as Const from '../common/constants';
-import * as Types from '../common/types';
+import { NetworkType, EventCallback } from '../common/types';
 
 export default class Connect {
   private app: firebase.app.App;
@@ -29,8 +29,22 @@ export default class Connect {
     };
   }
 
-  constructor(type: Types.NetworkType, mnemonic: string) {
-    const firebaseConfig = (type === 'MAINNET')
+  static getProviderUrl(type: NetworkType, port?: number): string {
+    const portStr = port ? `:${port}` : '';
+    switch (type) {
+      case NetworkType.MAINNET:
+        return `${Const.MAINNET_PROVIDER_URL}${portStr}`;
+      case NetworkType.DEVNET:
+      case NetworkType.TESTNET:
+        return `${Const.TESTNET_PROVIDER_URL}${portStr}`;
+      case NetworkType.LOCAL:
+      default:
+        return `${Const.LOCAL_PROVIDER_URL}${portStr}`;
+    }
+  }
+
+  constructor(type: NetworkType, mnemonic: string, port?: number) {
+    const firebaseConfig = (type === NetworkType.MAINNET)
       ? Const.MAINNET_FIREBASE_CONFIG
       : Const.TESTNET_FIREBASE_CONFIG;
     if (!firebase.apps.length) {
@@ -38,8 +52,8 @@ export default class Connect {
     } else {
       this.app = firebase.app();
     }
-    this.ainJs = new AinJS(type === 'MAINNET'
-      ? Const.MAINNET_PROVIDER_URL : Const.TESTNET_PROVIDER_URL);
+
+    this.ainJs = new AinJS(Connect.getProviderUrl(type, port));
     const walletInfo = Connect.getWalletInfo(mnemonic);
     this.wallet = walletInfo.wallet;
     this.mnemonic = mnemonic;
@@ -60,14 +74,14 @@ export default class Connect {
         tx_body: txBody,
       });
 
-    if (!result.data) {
+    if (result.data && result.data.error_message) {
       throw Error(`[code:${result.data.code}]: ${result.data.error_message}`);
     }
   }
 
   public addEventListener = (
     path: string,
-    callback: Types.EventCallback,
+    callback: EventCallback,
   ) => {
     // TODO: 처리된 event들에 대해선 callback 발생하지 않도록
     this.app.database().ref(path).on('child_added',

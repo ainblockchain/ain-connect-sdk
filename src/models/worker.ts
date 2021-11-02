@@ -7,8 +7,8 @@ export default class Worker {
   private name: string;
   private connect: Connect;
 
-  constructor(type: Types.NetworkType, mnemonic: string, name: string) {
-    this.connect = new Connect(type, mnemonic);
+  constructor(type: Types.NetworkType, mnemonic: string, name: string, port?: number) {
+    this.connect = new Connect(type, mnemonic, port);
     this.name = name;
   }
 
@@ -62,7 +62,7 @@ export default class Worker {
       const responsePath = `${Path.getUserResponseQueuePath(value.userAinAddress)}/${requestId}`;
       const responseData = await this.connect.get(responsePath);
       if (!responseData) {
-        await callback(ref, value);
+        callback(ref, value);
       }
     });
   }

@@ -12,8 +12,8 @@ function getRandomRequestId() {
 export default class Client {
   private connect: Connect;
 
-  constructor(type: Types.NetworkType, mnemonic: string) {
-    this.connect = new Connect(type, mnemonic);
+  constructor(type: Types.NetworkType, mnemonic: string, port?: number) {
+    this.connect = new Connect(type, mnemonic, port);
   }
 
   public sendRequest = async (
