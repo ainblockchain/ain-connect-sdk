@@ -47,7 +47,11 @@ export default class Connect {
     const firebaseConfig = (type === NetworkType.MAINNET)
       ? Const.MAINNET_FIREBASE_CONFIG
       : Const.TESTNET_FIREBASE_CONFIG;
-    this.app = firebase.initializeApp(firebaseConfig);
+    if (!firebase.apps.length) {
+      this.app = firebase.initializeApp(firebaseConfig);
+    } else {
+      this.app = firebase.app();
+    }
 
     this.ainJs = new AinJS(Connect.getProviderUrl(type, port));
     const walletInfo = Connect.getWalletInfo(mnemonic);

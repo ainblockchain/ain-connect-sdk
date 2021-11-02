@@ -26,6 +26,18 @@ export default class Worker {
     await this.connect.sendTransaction(txInput);
   }
 
+  public clearWorkerRegister = async () => {
+    const txInput: TransactionInput = {
+      operation: {
+        type: 'SET_VALUE',
+        ref: Path.getWorkerRegisterWithPrefixPath(this.name, this.connect.getAddress()),
+        value: null,
+      },
+      address: this.connect.getAddress(),
+    };
+    await this.connect.sendTransaction(txInput);
+  }
+
   public updateStatus = async (
     status: Types.WorkerStatusParams,
   ) => {
