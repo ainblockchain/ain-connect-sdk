@@ -41,7 +41,7 @@ export default class Client {
     callback: Types.ResponseEventCallback,
   ) => {
     const address = this.connect.getAddress();
-    const path = Path.getUserResponseQueuePath(address);
+    const path = Path.getUserResponsesPath(address);
     this.connect.addEventListener(path, callback);
   }
 

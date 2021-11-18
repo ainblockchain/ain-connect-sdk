@@ -33,20 +33,17 @@ export default class Connect {
     const portStr = port ? `:${port}` : '';
     switch (type) {
       case NetworkType.MAINNET:
-        return `${Const.MAINNET_PROVIDER_URL}${portStr}`;
       case NetworkType.DEVNET:
       case NetworkType.TESTNET:
-        return `${Const.TESTNET_PROVIDER_URL}${portStr}`;
+        return Const.PROVIDER_URL[type];
       case NetworkType.LOCAL:
       default:
-        return `${Const.LOCAL_PROVIDER_URL}${portStr}`;
+        return `${Const.PROVIDER_URL[type]}${portStr}`;
     }
   }
 
   constructor(type: NetworkType, mnemonic: string, port?: number) {
-    const firebaseConfig = (type === NetworkType.MAINNET)
-      ? Const.MAINNET_FIREBASE_CONFIG
-      : Const.TESTNET_FIREBASE_CONFIG;
+    const firebaseConfig = Const.FIREBASE_CONFIG[type];
     if (!firebase.apps.length) {
       this.app = firebase.initializeApp(firebaseConfig);
     } else {

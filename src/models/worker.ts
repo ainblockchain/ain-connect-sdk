@@ -59,7 +59,7 @@ export default class Worker {
     const path = Path.getWorkerRequestQueuePath(this.name, this.connect.getAddress());
     this.connect.addEventListener(path, async (ref, value) => {
       const requestId = ref.split('/').reverse()[0];
-      const responsePath = `${Path.getUserResponseQueuePath(value.userAinAddress)}/${requestId}`;
+      const responsePath = `${Path.getUserResponsesPath(value.userAinAddress)}/${requestId}`;
       const responseData = await this.connect.get(responsePath);
       if (!responseData) {
         callback(ref, value);
@@ -75,7 +75,7 @@ export default class Worker {
     const txInput: TransactionInput = {
       operation: {
         type: 'SET_VALUE',
-        ref: `${Path.getUserResponseQueueWithPrefixPath(requestAddress)}/${requestId}`,
+        ref: `${Path.getUserResponsesWithPrefixPath(requestAddress)}/${requestId}`,
         value: {
           ...value,
           workerId: `${this.name}@${this.connect.getAddress()}`,
