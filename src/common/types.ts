@@ -33,6 +33,7 @@ export type ContainerSpec = {
     maxGB: number;
   };
   maxNumberOfContainer: number;
+  hasEndpoint: boolean;
 }
 
 export type WorkerRegisterLabel = {
@@ -54,9 +55,10 @@ export type WorkerStatusParams = {
   containerInfo: {
     [containerId: string]: {
       status: string;
-      exitCode?: number;
       imagePath: string;
-      ports: number[];
+      ports: {
+        [serviceName: string]: number;
+      };
     };
   },
 }
