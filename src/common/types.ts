@@ -57,9 +57,6 @@ export type WorkerStatusParams = {
       status: string;
       serviceStatus?: string;
       imagePath: string;
-      ports: {
-        [serviceName: string]: number;
-      };
     };
   },
 }
