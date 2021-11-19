@@ -48,7 +48,7 @@ export default class Client {
   public getWorkerList = async (
   ): Promise<Types.WorkerInfo> => {
     // TODO: worker filter option?
-    const res = await this.connect.get(Path.WORKER_INFO);
+    const res = await this.connect.get(Path.WORKER_LIST_PATH);
     return res;
   }
 
