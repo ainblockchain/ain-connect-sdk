@@ -33,9 +33,9 @@ export default class Worker {
     const txInput: TransactionInput = {
       operation: {
         type: 'SET_VALUE',
-        ref: Path.getWorkerRegisterWithPrefixPath(this.name, this.connect.getAddress()),
+        ref: Path.getWorkerStatusWithPrefixPath(this.name, this.connect.getAddress()),
         value: {
-          status: 'terminated',
+          workerStatus: 'terminated',
         },
       },
       address: this.connect.getAddress(),

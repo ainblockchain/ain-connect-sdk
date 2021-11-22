@@ -51,6 +51,7 @@ export type WorkerInfo = {
 }
 
 export type WorkerStatusParams = {
+  workerStatus: string;
   currentNumberOfContainer: number;
   containerInfo: {
     [containerId: string]: {
