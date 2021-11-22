@@ -6,7 +6,7 @@ export const getWorkerId = (name: string, address: string) => `${name}@${address
 export const getWorkerStatusPath = (
   name: string,
   address: string,
-) => `/worker_info/${getWorkerId(name, address)}/status`;
+) => `${WORKER_LIST_PATH}/${getWorkerId(name, address)}/status`;
 
 export const getContainerStatusPath = (
   name: string,
@@ -17,7 +17,7 @@ export const getContainerStatusPath = (
 export const getWorkerRegisterWithPrefixPath = (
   name: string,
   address: string,
-) => `${PREFIX_PATH}/${getWorkerId(name, address)}`;
+) => `${PREFIX_PATH}${WORKER_LIST_PATH}/${getWorkerId(name, address)}`;
 
 export const getWorkerStatusWithPrefixPath = (
   name: string,
