@@ -27,6 +27,9 @@ export default class Worker {
   }
 
   public terminate = async () => {
+    /**
+     * @TODO It must be modified when migrating to the blockchain
+     */
     const txInput: TransactionInput = {
       operation: {
         type: 'SET_VALUE',
