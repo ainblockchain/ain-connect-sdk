@@ -92,4 +92,6 @@ export default class Worker {
   }
 
   public getConnect = () => this.connect;
+
+  public getWorkerId = () => Path.getWorkerId(this.name, this.connect.getAddress());
 }

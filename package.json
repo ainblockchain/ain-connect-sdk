@@ -1,6 +1,6 @@
 {
   "name": "@ainblockchain/connect-sdk",
-  "version": "0.6.5",
+  "version": "0.6.6",
   "description": "SDK for AIN Connect functionality",
   "repository": {
     "type": "git",
@@ -52,11 +52,13 @@
     "@ainblockchain/ain-js": "^1.0.2",
     "@ainblockchain/ain-util": "^1.1.5",
     "@aindev/connect-redis-sdk": "^0.1.6",
+    "@google-cloud/storage": "^5.16.0",
     "@types/bip39": "^3.0.0",
     "@types/hdkey": "^0.7.1",
     "bip39": "^3.0.2",
     "firebase": "^7.19.0",
     "hdkey": "^2.0.1",
-    "nanoid": "^3.1.12"
+    "nanoid": "^3.1.12",
+    "xhr2": "^0.2.1"
   }
 }
