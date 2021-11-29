@@ -1,6 +1,6 @@
 {
-  "name": "@aindev/connect-sdk",
-  "version": "0.1.23",
+  "name": "@ainblockchain/connect-sdk",
+  "version": "0.6.6",
   "description": "SDK for AIN Connect functionality",
   "repository": {
     "type": "git",
@@ -14,7 +14,8 @@
   "keywords": [
     "ainetwork",
     "ain",
-    "ainconnect"
+    "ainconnect",
+    "blockchain"
   ],
   "scripts": {
     "test": "jest",
@@ -31,11 +32,12 @@
   ],
   "devDependencies": {
     "@types/jest": "^26.0.7",
-    "@typescript-eslint/eslint-plugin": "^2.22.0",
+    "@typescript-eslint/eslint-plugin": "^4.4.1",
     "@typescript-eslint/parser": "^2.22.0",
     "eslint": "^6.8.0",
     "eslint-config-airbnb-base": "^14.0.0",
-    "eslint-plugin-import": "^2.20.1",
+    "eslint-config-airbnb-typescript": "^12.3.1",
+    "eslint-plugin-import": "^2.22.0",
     "husky": "^4.2.5",
     "jest": "^24.8.0",
     "ts-jest": "^24.0.2",
@@ -50,11 +52,13 @@
     "@ainblockchain/ain-js": "^1.0.2",
     "@ainblockchain/ain-util": "^1.1.5",
     "@aindev/connect-redis-sdk": "^0.1.6",
+    "@google-cloud/storage": "^5.16.0",
     "@types/bip39": "^3.0.0",
     "@types/hdkey": "^0.7.1",
     "bip39": "^3.0.2",
     "firebase": "^7.19.0",
     "hdkey": "^2.0.1",
-    "nanoid": "^3.1.12"
+    "nanoid": "^3.1.12",
+    "xhr2": "^0.2.1"
   }
 }

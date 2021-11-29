@@ -1,25 +1,47 @@
-export const PROD_FIREBASE_CONFIG = {
-  apiKey: 'AIzaSyDsYGMurjKosgDisnXN5PkPDB8hb34qXDc',
-  authDomain: 'ain-connect-api-server.firebaseapp.com',
-  databaseURL: 'https://ain-connect-api-server.firebaseio.com',
-  projectId: 'ain-connect-api-server',
-  storageBucket: 'ain-connect-api-server.appspot.com',
-  messagingSenderId: '992952534673',
-  appId: '1:992952534673:web:82d9f7b070d70506066130',
-  measurementId: 'G-ZZWBE57SGE',
+import { NetworkType } from './types';
+
+export const PROVIDER_URL: {[key: string]: string} = {
+  [NetworkType.MAINNET]: '',
+  [NetworkType.TESTNET]: 'https://testnet-api.ainetwork.ai',
+  [NetworkType.DEVNET]: 'https://dev-api.ainetwork.ai',
+  [NetworkType.LOCAL]: 'https://localhost',
 };
 
-export const STAGING_FIREBASE_CONFIG = {
-  apiKey: 'AIzaSyDa6-Muw27_oczpCHOe8kVAZzuQ5BgCkS4',
-  authDomain: 'ain-connect-api-server-dev.firebaseapp.com',
-  databaseURL: 'https://ain-connect-api-server-dev.firebaseio.com',
-  projectId: 'ain-connect-api-server-dev',
-  storageBucket: 'ain-connect-api-server-dev.appspot.com',
-  messagingSenderId: '799118803554',
-  appId: '1:799118803554:web:508677f48e6bdf5e5b473b',
-  measurementId: 'G-9DZCTCN5FH',
+export const FIREBASE_CONFIG: {[key: string]: any} = {
+  [NetworkType.MAINNET]: {
+    apiKey: 'AIzaSyCaNna60wsEWDYhAleGVj5jjp3-24GCtN0',
+    authDomain: 'gpt2-ainetwork-prod.firebaseapp.com',
+    databaseURL: 'https://gpt2-ainetwork-prod.firebaseio.com',
+    projectId: 'gpt2-ainetwork-prod',
+    storageBucket: 'gpt2-ainetwork-prod.appspot.com',
+    messagingSenderId: '983388933112',
+    appId: '1:983388933112:web:50fe344b8afb049f9e240d',
+    measurementId: 'G-Q2GFZYSWVW',
+  },
+  [NetworkType.TESTNET]: {
+    apiKey: 'AIzaSyDFdzVaMN1BzEEYtIw0i36do_7ojaGtPPo',
+    authDomain: 'gpt2-ainetwork-staging.firebaseapp.com',
+    databaseURL: 'https://gpt2-ainetwork-staging-default-rtdb.firebaseio.com',
+    projectId: 'gpt2-ainetwork-staging',
+    storageBucket: 'gpt2-ainetwork-staging.appspot.com',
+    messagingSenderId: '413933589405',
+    appId: '1:413933589405:web:73b59c581df50e5d729574',
+    measurementId: 'G-SNCK4FLQBN',
+  },
+  [NetworkType.DEVNET]: {
+    apiKey: 'AIzaSyA_ss5fiOD6bckPQk7qnb_Ruwd29OVWXE8',
+    authDomain: 'gpt2-ainetwork.firebaseapp.com',
+    databaseURL: 'https://gpt2-ainetwork.firebaseio.com',
+    projectId: 'gpt2-ainetwork',
+    storageBucket: 'gpt2-ainetwork.appspot.com',
+    messagingSenderId: '1045334268091',
+    appId: '1:1045334268091:web:c0490dfa3e8057a078f19e',
+    measurementId: 'G-MVG9QTFBG8',
+  },
+  [NetworkType.LOCAL]: {},
 };
 
-export const MAINNET_PROVIDER_URL = 'http://node.ainetwork.ai:8080';
-
-export const TESTNET_PROVIDER_URL = 'http://node.ainetwork.ai:8080';
+// temporary
+export const MAINNET_FIREBASE_ENDPOINT = '';
+export const TESTNET_FIREBASE_ENDPOINT = 'https://us-central1-gpt2-ainetwork-staging.cloudfunctions.net';
+export const DEVNET_FIREBASE_ENDPOINT = 'https://us-central1-gpt2-ainetwork.cloudfunctions.net';

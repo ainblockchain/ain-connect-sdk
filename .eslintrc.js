@@ -31,5 +31,6 @@ module.exports = {
     'camelcase': 0,
     'class-methods-use-this': 0,
     'import/extensions': [0, 'ignorePackages'],
+    'lines-between-class-members': 0,
   }
 };

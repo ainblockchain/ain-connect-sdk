@@ -1,188 +1,97 @@
-import Wallet from './wallet';
-import Firebase from '../common/firebase';
+import { TransactionInput } from '@ainblockchain/ain-js/lib/types';
+import Connect from './connect';
 import * as Types from '../common/types';
-import * as error from '../common/error';
+import * as Path from '../common/path';
 
 export default class Worker {
-  private wallet: Wallet;
+  private name: string;
+  private connect: Connect;
 
-  private firebase: Firebase;
-
-  private listenMethodList: Types.workerListenMethod;
-
-  private clusterName: string
-
-  constructor(mnemonic: string, clusterName: string,
-    env: Types.EnvType, config?: Types.FirebaseConfig) {
-    this.wallet = new Wallet(mnemonic, env);
-    this.clusterName = clusterName;
-    this.firebase = new Firebase(env, config);
+  constructor(type: Types.NetworkType, mnemonic: string, name: string, port?: number) {
+    this.connect = new Connect(type, mnemonic, port);
+    this.name = name;
   }
 
-  public getAddress() {
-    return this.wallet.getAddress();
-  }
-
-  // default timeout: 30sec
-  public async writeResult(result: any, dbpath: string, timeout: number = 30000) {
-    const data = this.wallet.signaturePayload({
-      payload: JSON.stringify({
-        updatedAt: this.firebase.getTimestamp(),
-        ...result,
-      }),
-    });
-    const reqMassage = {
-      ...data,
-      dbpath,
+  public register = async (
+    params: Types.WorkerRegisterParams,
+  ) => {
+    const txInput: TransactionInput = {
+      operation: {
+        type: 'SET_VALUE',
+        ref: Path.getWorkerRegisterWithPrefixPath(this.name, this.connect.getAddress()),
+        value: params,
+      },
+      address: this.connect.getAddress(),
     };
-    await this.firebase.getInstance().functions()
-      .httpsCallable('sendTransaction', { timeout })(reqMassage);
+    await this.connect.sendTransaction(txInput);
   }
 
-  public listenRequest(methods: Types.workerListenMethod) {
-    this.listenMethodList = methods;
-    this.firebase.getInstance().database()
-      .ref(`/worker/request_queue/${this.clusterName}@${this.wallet.getAddress()}`)
-      .on('child_added', async (data) => {
-        const requestId = data.key as string;
-        const value = data.val();
-        const methodType = value.type as Types.ListenMethodList;
-        const dbpath = `/worker/request_queue/${this.clusterName}@${this.wallet.getAddress()}/${requestId}/response`;
-        if (value.response) { // already has response
-          return;
-        }
-        if (this.listenMethodList[methodType]) {
-          let result;
-          try {
-            result = {
-              statusCode: error.STATUS_CODE.success,
-              result: await this.listenMethodList[methodType](
-                value.address, value.payload,
-              ),
-            };
-          } catch (e) {
-            result = {
-              statusCode: error.STATUS_CODE.failedMethod,
-              errMessage: String(e),
-            };
-          }
-          await this.writeResult(result, dbpath);
-        } else {
-          await this.writeResult({
-            statusCode: error.STATUS_CODE.invalidParams,
-            errMessage: `Not defined method: ${methodType}`,
-          }, dbpath);
-        }
-      });
-  }
-
-  // default timeout: 30sec
-  public async deletePath(path: string, timeout: number = 30000) {
-    const data = this.wallet.signaturePayload({ path });
-    await this.firebase.getInstance().functions()
-      .httpsCallable('deleteTransaction', { timeout })(data);
-  }
-
-  // default timeout: 30sec
-  public async writeStatus(status: object, dbpath: string, timeout: number = 30000) {
-    const data = this.wallet.signaturePayload({
-      payload: JSON.stringify({
-        updatedAt: this.firebase.getTimestamp(),
-        params: status,
-      }),
-    });
-    const reqMassage = {
-      ...data,
-      dbpath,
+  public terminate = async () => {
+    /**
+     * @TODO It must be modified when migrating to the blockchain
+     */
+    const txInput: TransactionInput = {
+      operation: {
+        type: 'SET_VALUE',
+        ref: Path.getWorkerStatusWithPrefixPath(this.name, this.connect.getAddress()),
+        value: {
+          workerStatus: 'terminated',
+        },
+      },
+      address: this.connect.getAddress(),
     };
-    await this.firebase.getInstance().functions()
-      .httpsCallable('sendTransaction', { timeout })(reqMassage);
+    await this.connect.sendTransaction(txInput);
   }
 
-  public async setClusterStatus(status: Types.ClusterStatusParams) {
-    const path = `/worker/info/${status.clusterName}@${this.getAddress()}`;
-    await this.writeStatus({
-      address: this.getAddress(),
-      ...status,
-    }, path);
+  public updateStatus = async (
+    status: Types.WorkerStatusParams,
+  ) => {
+    const address = this.connect.getAddress();
+    const txInput: TransactionInput = {
+      operation: {
+        type: 'SET_VALUE',
+        ref: Path.getWorkerStatusWithPrefixPath(this.name, address),
+        value: status,
+      },
+      address,
+    };
+    await this.connect.sendTransaction(txInput);
   }
 
-  public async deleteClusterStatus(clusterName: string) {
-    await this.deletePath(`/worker/info/${clusterName}@${this.getAddress()}`);
+  public listenRequestQueue = (
+    callback: Types.RequestEventCallback,
+  ) => {
+    const path = Path.getWorkerRequestQueuePath(this.name, this.connect.getAddress());
+    this.connect.addEventListener(path, async (ref, value) => {
+      const requestId = ref.split('/').reverse()[0];
+      const responsePath = `${Path.getUserResponsesPath(value.userAinAddress)}/${requestId}`;
+      const responseData = await this.connect.get(responsePath);
+      if (!responseData) {
+        callback(ref, value);
+      }
+    });
   }
 
-  public async setWorkerStatusForDocker(clusterName: string) {
-    const path = `/worker/info/${clusterName}@${this.getAddress()}`;
-    await this.writeStatus({
-      address: this.getAddress(),
-      clusterName,
-      isDocker: true,
-    }, path);
+  public sendResponse = async (
+    requestId: string,
+    requestAddress: string,
+    value: Types.SendResponseValue,
+  ) => {
+    const txInput: TransactionInput = {
+      operation: {
+        type: 'SET_VALUE',
+        ref: `${Path.getUserResponsesWithPrefixPath(requestAddress)}/${requestId}`,
+        value: {
+          ...value,
+          workerId: `${this.name}@${this.connect.getAddress()}`,
+        },
+      },
+      address: this.connect.getAddress(),
+    };
+    await this.connect.sendTransaction(txInput);
   }
 
-  public async deleteWorkerStatusForDocker(clusterName: string) {
-    await this.deletePath(`/worker/info/${clusterName}@${this.getAddress()}`);
-  }
+  public getConnect = () => this.connect;
 
-  public async setPodStatus(status: Types.SetPodStatusParams) {
-    const { clusterName, containerId, podId } = status;
-    const key = `/container/${clusterName}@${this.getAddress()}/${containerId}/${podId}`;
-    await this.writeStatus(status.podStatus, key);
-  }
-
-  public async deletePodStatus(clusterName: string, containerId: string, podId: string) {
-    const key = `/container/${clusterName}@${this.getAddress()}/${containerId}/${podId}`;
-    await this.deletePath(key);
-  }
-
-  public async setContainerStatusForDocker(status: Types.SetContainerStatusForDocker) {
-    const { clusterName, containerId } = status;
-    const key = `/container/${clusterName}@${this.getAddress()}/${containerId}`;
-    await this.writeStatus(status.containerStatus, key);
-  }
-
-  public async deleteContainerStatusForDocker(clusterName: string, containerId: string) {
-    const key = `/container/${clusterName}@${this.getAddress()}/${containerId}`;
-    await this.deletePath(key);
-  }
-
-  public async setStorageStatus(status: Types.SetStorageStatusParams) {
-    const key = `/storage/${status.clusterName}@${this.getAddress()}/${status.storageId}`;
-    await this.writeStatus(status.storageStatus, key);
-  }
-
-  public async deleteStorageStatus(clusterName: string, storageId: string) {
-    const key = `/storage/${clusterName}@${this.getAddress()}/${storageId}`;
-    await this.deletePath(key);
-  }
-
-  public async getAllContainers(clusterName: string)
-    : Promise<Types.GetAllContainersReturn> {
-    const snap = await this.firebase.getInstance().database()
-      .ref(`/container/${clusterName}@${this.getAddress()}`).once('value');
-    if (!snap.exists) {
-      return null;
-    }
-    return snap.val();
-  }
-
-  public async getAllStorages(clusterName: string)
-    : Promise<Types.GetAllStoragesReturn> {
-    const snap = await this.firebase.getInstance().database()
-      .ref(`/storage/${clusterName}@${this.getAddress()}`).once('value');
-    if (!snap.exists) {
-      return null;
-    }
-    return snap.val();
-  }
-
-  public async getAllContainersForDocker(clusterName: string)
-    : Promise<Types.GetAllContainersForDockerReturn> {
-    const snap = await this.firebase.getInstance().database()
-      .ref(`/container/${clusterName}@${this.getAddress()}`).once('value');
-    if (!snap.exists) {
-      return null;
-    }
-    return snap.val();
-  }
+  public getWorkerId = () => Path.getWorkerId(this.name, this.connect.getAddress());
 }
