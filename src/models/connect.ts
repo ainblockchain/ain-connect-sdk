@@ -2,12 +2,12 @@ import firebase from 'firebase/app';
 import 'firebase/auth';
 import 'firebase/database';
 import 'firebase/functions';
+import 'firebase/storage';
 import { TransactionInput } from '@ainblockchain/ain-js/lib/types';
 import { mnemonicToSeedSync } from 'bip39';
 import * as ainUtil from '@ainblockchain/ain-util';
 import AinJS from '@ainblockchain/ain-js';
 import HDKey from 'hdkey';
-
 import * as Const from '../common/constants';
 import { NetworkType, EventCallback } from '../common/types';
 
@@ -97,4 +97,5 @@ export default class Connect {
   public getPrivateKey = () => this.privateKey;
   public getAddress = () => this.address;
   public getAinJs = () => this.ainJs;
+  public getApp = () => this.app;
 }
