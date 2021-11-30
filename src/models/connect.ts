@@ -50,10 +50,10 @@ export default class Connect {
     useFirebase?: boolean, // XXX: temporary param
   ) {
     const firebaseConfig = Const.FIREBASE_CONFIG[type];
-    if (!firebase.apps.length) {
-      this.app = firebase.initializeApp(firebaseConfig);
+    if (!firebase.apps.includes[type]) {
+      this.app = firebase.initializeApp(firebaseConfig, type);
     } else {
-      this.app = firebase.app();
+      this.app = firebase.app(type);
     }
 
     this.ainJs = new AinJS(Connect.getProviderUrl(type, port));
@@ -66,6 +66,16 @@ export default class Connect {
 
     this.ainJs.wallet.addFromHDWallet(mnemonic);
     this.ainJs.wallet.setDefaultAccount(this.address);
+  }
+
+  public changeNetwork = (type: NetworkType, port?: number) => {
+    const firebaseConfig = Const.FIREBASE_CONFIG[type];
+    if (!firebase.apps.includes[type]) {
+      this.app = firebase.initializeApp(firebaseConfig, type);
+    } else {
+      this.app = firebase.app(type);
+    }
+    this.ainJs.setProvider(Connect.getProviderUrl(type, port));
   }
 
   public sendTransaction = async (txInput: TransactionInput) => {
@@ -99,11 +109,15 @@ export default class Connect {
     path: string,
     callback: EventCallback,
   ) => {
-    // TODO: 처리된 event들에 대해선 callback 발생하지 않도록
-    this.app.database().ref(path).on('child_added',
-      async (snap) => {
-        await callback(`${path}/${snap.key}`, snap.val());
-      });
+    if (this.fbMode) {
+      // TODO: 처리된 event들에 대해선 callback 발생하지 않도록
+      this.app.database().ref(path).on('child_added',
+        async (snap) => {
+          await callback(`${path}/${snap.key}`, snap.val());
+        });
+    } else {
+      // TODO
+    }
   }
 
   public get = async (path: string) => {
