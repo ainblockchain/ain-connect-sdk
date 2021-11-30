@@ -5,13 +5,17 @@ import 'firebase/functions';
 import 'firebase/storage';
 import { TransactionInput } from '@ainblockchain/ain-js/lib/types';
 import { mnemonicToSeedSync } from 'bip39';
-import * as ainUtil from '@ainblockchain/ain-util';
+import {
+  toChecksumAddress,
+  pubToAddress,
+} from '@ainblockchain/ain-util';
 import AinJS from '@ainblockchain/ain-js';
 import HDKey from 'hdkey';
 import * as Const from '../common/constants';
 import { NetworkType, EventCallback } from '../common/types';
 
 export default class Connect {
+  private _initialized: boolean = false;
   private app: firebase.app.App;
   private wallet: HDKey;
   private mnemonic: string;
@@ -20,13 +24,15 @@ export default class Connect {
   private ainJs: AinJS;
   private fbMode: boolean; // XXX: temporary property
 
-  static getWalletInfo(mnemonic: string) {
+  static getWalletInfo(mnemonic: string, index: number) {
     const key = HDKey.fromMasterSeed(mnemonicToSeedSync(mnemonic));
-    const wallet = key.derive("m/44'/412'/0'/0/0"); /* default wallet address for AIN */
+    const wallet = key.derive(`m/44'/412'/0'/0/${index}`);
     return {
       wallet,
       privateKey: `0x${wallet.privateKey.toString('hex')}`,
-      address: ainUtil.toChecksumAddress(`0x${ainUtil.pubToAddress(wallet.publicKey, true).toString('hex')}`),
+      address: toChecksumAddress(
+        `0x${pubToAddress(wallet.publicKey, true).toString('hex')}`,
+      ),
     };
   }
 
@@ -57,7 +63,7 @@ export default class Connect {
     }
 
     this.ainJs = new AinJS(Connect.getProviderUrl(type, port));
-    const walletInfo = Connect.getWalletInfo(mnemonic);
+    const walletInfo = Connect.getWalletInfo(mnemonic, 0);
     this.wallet = walletInfo.wallet;
     this.mnemonic = mnemonic;
     this.privateKey = walletInfo.privateKey;
@@ -66,6 +72,17 @@ export default class Connect {
 
     this.ainJs.wallet.addFromHDWallet(mnemonic);
     this.ainJs.wallet.setDefaultAccount(this.address);
+    this._initialized = true;
+  }
+
+  public changeAccount = (index: number) => {
+    if (!this._initialized) {
+      throw new Error('Connect SDK not initialized');
+    }
+    const walletInfo = Connect.getWalletInfo(this.mnemonic, index);
+    this.wallet = walletInfo.wallet;
+    this.privateKey = walletInfo.privateKey;
+    this.address = walletInfo.address;
   }
 
   public changeNetwork = (type: NetworkType, port?: number) => {
@@ -93,15 +110,15 @@ export default class Connect {
         throw Error(`[code:${result.data.code}]: ${result.data.error_message}`);
       }
       return result;
-    }
-
-    const result = await this.ainJs.sendTransaction(txInput);
-    if (result.code) {
-      /* result: { code: 'ERROR_CODE', message: 'ERROR_MESSAGE' } */
-      throw Error(`[code:${result.code}]: ${result.message}`);
     } else {
-      /* result: { result: any, tx_hash: 'TX_HASH' } */
-      return result;
+      const result = await this.ainJs.sendTransaction(txInput);
+      if (result.code) {
+        /* result: { code: 'ERROR_CODE', message: 'ERROR_MESSAGE' } */
+        throw Error(`[code:${result.code}]: ${result.message}`);
+      } else {
+        /* result: { result: any, tx_hash: 'TX_HASH' } */
+        return result;
+      }
     }
   }
 
@@ -124,9 +141,10 @@ export default class Connect {
     if (this.fbMode) {
       const snap = await this.app.database().ref(path).once('value');
       return snap.val();
+    } else {
+      const res = await this.ainJs.db.ref(path).getValue();
+      return res;
     }
-    const res = await this.ainJs.db.ref(path).getValue();
-    return res;
   }
 
   public set = async (path: string, value: any) => {

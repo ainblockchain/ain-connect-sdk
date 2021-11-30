@@ -31,7 +31,7 @@ export default class Storage {
     const results = await storage.getBuckets();
     const [buckets] = results;
     let isValid = false;
-    buckets.forEach((bucket) => {
+    buckets.forEach((bucket: any) => {
       if (bucket.name === this.storageBucket) {
         isValid = true;
       }
