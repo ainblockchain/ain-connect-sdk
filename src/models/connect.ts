@@ -18,6 +18,7 @@ export default class Connect {
   private privateKey: string;
   private address: string;
   private ainJs: AinJS;
+  private fbMode: boolean; // XXX: temporary property
 
   static getWalletInfo(mnemonic: string) {
     const key = HDKey.fromMasterSeed(mnemonicToSeedSync(mnemonic));
@@ -42,7 +43,12 @@ export default class Connect {
     }
   }
 
-  constructor(type: NetworkType, mnemonic: string, port?: number) {
+  constructor(
+    type: NetworkType,
+    mnemonic: string,
+    port?: number,
+    useFirebase?: boolean, // XXX: temporary param
+  ) {
     const firebaseConfig = Const.FIREBASE_CONFIG[type];
     if (!firebase.apps.length) {
       this.app = firebase.initializeApp(firebaseConfig);
@@ -56,6 +62,7 @@ export default class Connect {
     this.mnemonic = mnemonic;
     this.privateKey = walletInfo.privateKey;
     this.address = walletInfo.address;
+    this.fbMode = useFirebase || false;
 
     this.ainJs.wallet.addFromHDWallet(mnemonic);
     this.ainJs.wallet.setDefaultAccount(this.address);
@@ -63,16 +70,28 @@ export default class Connect {
 
   public sendTransaction = async (txInput: TransactionInput) => {
     const txBody = await this.ainJs.buildTransactionBody(txInput);
-    const signature = this.ainJs.wallet.signTransaction(txBody);
+    if (this.fbMode) {
+      const signature = this.ainJs.wallet.signTransaction(txBody);
 
-    const result = await this.app.functions()
-      .httpsCallable('sendSignedTransaction')({
-        signature,
-        tx_body: txBody,
-      });
+      const result = await this.app.functions()
+        .httpsCallable('sendSignedTransaction')({
+          signature,
+          tx_body: txBody,
+        });
 
-    if (result.data && result.data.error_message) {
-      throw Error(`[code:${result.data.code}]: ${result.data.error_message}`);
+      if (result.data && result.data.error_message) {
+        throw Error(`[code:${result.data.code}]: ${result.data.error_message}`);
+      }
+      return result;
+    }
+
+    const result = await this.ainJs.sendTransaction(txInput);
+    if (result.code) {
+      /* result: { code: 'ERROR_CODE', message: 'ERROR_MESSAGE' } */
+      throw Error(`[code:${result.code}]: ${result.message}`);
+    } else {
+      /* result: { result: any, tx_hash: 'TX_HASH' } */
+      return result;
     }
   }
 
@@ -88,8 +107,20 @@ export default class Connect {
   }
 
   public get = async (path: string) => {
-    const snap = await this.app.database().ref(path).once('value');
-    return snap.val();
+    if (this.fbMode) {
+      const snap = await this.app.database().ref(path).once('value');
+      return snap.val();
+    }
+    const res = await this.ainJs.db.ref(path).getValue();
+    return res;
+  }
+
+  public set = async (path: string, value: any) => {
+    if (this.fbMode) {
+      await this.app.database().ref(path).set(value);
+    } else {
+      await this.ainJs.db.ref(path).setValue({ value });
+    }
   }
 
   public getWallet = () => this.wallet;
