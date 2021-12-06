@@ -36,23 +36,20 @@ export default class Connect {
     };
   }
 
-  static getProviderUrl(type: NetworkType, port?: number): string {
-    const portStr = port ? `:${port}` : '';
+  static getProviderUrl(type: NetworkType): string {
     switch (type) {
       case NetworkType.MAINNET:
       case NetworkType.DEVNET:
       case NetworkType.TESTNET:
         return Const.PROVIDER_URL[type];
-      case NetworkType.LOCAL:
       default:
-        return `${Const.PROVIDER_URL[type]}${portStr}`;
+        throw new Error(`Wrong network type: ${type}`);
     }
   }
 
   constructor(
     type: NetworkType,
     mnemonic: string,
-    port?: number,
     useFirebase?: boolean, // XXX: temporary param
   ) {
     const firebaseConfig = Const.FIREBASE_CONFIG[type];
@@ -62,7 +59,7 @@ export default class Connect {
       this.app = firebase.app(type);
     }
 
-    this.ainJs = new AinJS(Connect.getProviderUrl(type, port));
+    this.ainJs = new AinJS(Connect.getProviderUrl(type));
     const walletInfo = Connect.getWalletInfo(mnemonic, 0);
     this.wallet = walletInfo.wallet;
     this.mnemonic = mnemonic;
@@ -92,7 +89,7 @@ export default class Connect {
     } else {
       this.app = firebase.app(type);
     }
-    this.ainJs.setProvider(Connect.getProviderUrl(type, port));
+    this.ainJs.setProvider(Connect.getProviderUrl(type));
   }
 
   public sendTransaction = async (txInput: TransactionInput) => {
@@ -117,6 +114,7 @@ export default class Connect {
         throw Error(`[code:${result.code}]: ${result.message}`);
       } else {
         /* result: { result: any, tx_hash: 'TX_HASH' } */
+        // TODO: transfer TX 같은 경우, balance 부족으로 실패해도 tx hash가 생성된다.
         return result;
       }
     }

@@ -12,8 +12,12 @@ function getRandomRequestId() {
 export default class Client {
   private connect: Connect;
 
-  constructor(type: Types.NetworkType, mnemonic: string, port?: number) {
-    this.connect = new Connect(type, mnemonic, port);
+  constructor(
+    type: Types.NetworkType,
+    mnemonic: string,
+    useFirebase?: boolean,
+  ) {
+    this.connect = new Connect(type, mnemonic, useFirebase);
   }
 
   public sendRequest = async (

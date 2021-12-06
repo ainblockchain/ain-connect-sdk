@@ -16,8 +16,8 @@ export default class Storage {
 
   private name: string;
 
-  constructor(type: Types.NetworkType, mnemonic: string, name: string, port?: number) {
-    this.connect = new Connect(type, mnemonic, port);
+  constructor(type: Types.NetworkType, mnemonic: string, name: string) {
+    this.connect = new Connect(type, mnemonic);
     this.name = name;
     this.storageBucket = Const.FIREBASE_CONFIG[type].storageBucket;
   }

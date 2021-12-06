@@ -7,8 +7,13 @@ export default class Worker {
   private name: string;
   private connect: Connect;
 
-  constructor(type: Types.NetworkType, mnemonic: string, name: string, port?: number) {
-    this.connect = new Connect(type, mnemonic, port);
+  constructor(
+    type: Types.NetworkType,
+    mnemonic: string,
+    name: string,
+    useFirebase?: boolean,
+  ) {
+    this.connect = new Connect(type, mnemonic, useFirebase);
     this.name = name;
   }
 
