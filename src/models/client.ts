@@ -10,14 +10,17 @@ function getRandomRequestId() {
 }
 
 export default class Client {
+  private appName: string;
   private connect: Connect;
 
   constructor(
     type: Types.NetworkType,
     mnemonic: string,
+    appName: string,
     useFirebase?: boolean,
   ) {
     this.connect = new Connect(type, mnemonic, useFirebase);
+    this.appName = appName;
   }
 
   public sendRequest = async (
@@ -29,7 +32,9 @@ export default class Client {
     const txInput: TransactionInput = {
       operation: {
         type: 'SET_VALUE',
-        ref: `${Path.getWorkerRequestQueuePathWithPrefixPath(name, address)}/${requestId}`,
+        ref: `${Path.getWorkerRequestQueuePathWithPrefixPath(
+          this.appName, name, address,
+        )}/${requestId}`,
         value: {
           ...value,
           userAinAddress: this.connect.getAddress(),

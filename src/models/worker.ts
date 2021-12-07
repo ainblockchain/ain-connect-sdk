@@ -5,28 +5,34 @@ import * as Path from '../common/path';
 
 export default class Worker {
   private name: string;
+  private appName: string;
   private connect: Connect;
 
   constructor(
     type: Types.NetworkType,
     mnemonic: string,
     name: string,
+    appName: string,
     useFirebase?: boolean,
   ) {
     this.connect = new Connect(type, mnemonic, useFirebase);
     this.name = name;
+    this.appName = appName;
   }
 
   public register = async (
     params: Types.WorkerRegisterParams,
   ) => {
+    const address = this.connect.getAddress();
     const txInput: TransactionInput = {
       operation: {
         type: 'SET_VALUE',
-        ref: Path.getWorkerRegisterWithPrefixPath(this.name, this.connect.getAddress()),
+        ref: Path.getWorkerRegisterWithPrefixPath(
+          this.appName, this.name, address,
+        ),
         value: params,
       },
-      address: this.connect.getAddress(),
+      address,
     };
     await this.connect.sendTransaction(txInput);
   }
@@ -35,15 +41,18 @@ export default class Worker {
     /**
      * @TODO It must be modified when migrating to the blockchain
      */
+    const address = this.connect.getAddress();
     const txInput: TransactionInput = {
       operation: {
         type: 'SET_VALUE',
-        ref: Path.getWorkerStatusWithPrefixPath(this.name, this.connect.getAddress()),
+        ref: Path.getWorkerStatusWithPrefixPath(
+          this.appName, this.name, address,
+        ),
         value: {
           workerStatus: 'terminated',
         },
       },
-      address: this.connect.getAddress(),
+      address,
     };
     await this.connect.sendTransaction(txInput);
   }
@@ -55,7 +64,9 @@ export default class Worker {
     const txInput: TransactionInput = {
       operation: {
         type: 'SET_VALUE',
-        ref: Path.getWorkerStatusWithPrefixPath(this.name, address),
+        ref: Path.getWorkerStatusWithPrefixPath(
+          this.appName, this.name, address,
+        ),
         value: status,
       },
       address,
@@ -85,7 +96,9 @@ export default class Worker {
     const txInput: TransactionInput = {
       operation: {
         type: 'SET_VALUE',
-        ref: `${Path.getUserResponsesWithPrefixPath(requestAddress)}/${requestId}`,
+        ref: `${Path.getUserResponsesWithPrefixPath(
+          this.appName, requestAddress,
+        )}/${requestId}`,
         value: {
           ...value,
           workerId: `${this.name}@${this.connect.getAddress()}`,
