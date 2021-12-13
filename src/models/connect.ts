@@ -141,7 +141,7 @@ export default class Connect {
       return snap.val();
     } else {
       const res = await this.ainJs.db.ref(path).getValue();
-      return res;
+      return res.result;
     }
   }
 

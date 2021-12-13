@@ -109,6 +109,17 @@ export default class Worker {
     await this.connect.sendTransaction(txInput);
   }
 
+  public getRequestQueue = async (
+  ) => {
+    const queue = await this.connect.get(
+      Path.getWorkerRequestQueuePathWithPrefixPath(
+        this.appName, this.name, this.connect.getAddress(),
+      ),
+    );
+
+    return queue;
+  }
+
   public getConnect = () => this.connect;
 
   public getWorkerId = () => Path.getWorkerId(this.name, this.connect.getAddress());
