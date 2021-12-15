@@ -1,7 +1,7 @@
-export const enum NetworkType {
+export enum NetworkType {
   MAINNET = 'MAINNET',
-  DEVNET = 'DEVNET',
   TESTNET = 'TESTNET',
+  DEVNET = 'DEVNET',
   LOCAL = 'LOCAL'
 }
 

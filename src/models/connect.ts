@@ -39,8 +39,8 @@ export default class Connect {
   static getProviderUrl(type: NetworkType): string {
     switch (type) {
       case NetworkType.MAINNET:
-      case NetworkType.DEVNET:
       case NetworkType.TESTNET:
+      case NetworkType.DEVNET:
         return Const.PROVIDER_URL[type];
       default:
         throw new Error(`Wrong network type: ${type}`);
@@ -52,13 +52,6 @@ export default class Connect {
     mnemonic: string,
     useFirebase?: boolean, // XXX: temporary param
   ) {
-    const firebaseConfig = Const.FIREBASE_CONFIG[type];
-    if (!firebase.apps.includes[type]) {
-      this.app = firebase.initializeApp(firebaseConfig, type);
-    } else {
-      this.app = firebase.app(type);
-    }
-
     this.ainJs = new AinJS(Connect.getProviderUrl(type));
     const walletInfo = Connect.getWalletInfo(mnemonic, 0);
     this.wallet = walletInfo.wallet;
@@ -66,6 +59,13 @@ export default class Connect {
     this.privateKey = walletInfo.privateKey;
     this.address = walletInfo.address;
     this.fbMode = useFirebase || false;
+    if (useFirebase) {
+      for (const networkType of Object.values(NetworkType)) {
+        const firebaseConfig = Const.FIREBASE_CONFIG[networkType];
+        firebase.initializeApp(firebaseConfig, networkType);
+      }
+      this.app = firebase.app(type);
+    }
 
     this.ainJs.wallet.addFromHDWallet(mnemonic);
     this.ainJs.wallet.setDefaultAccount(this.address);
@@ -82,14 +82,11 @@ export default class Connect {
     this.address = walletInfo.address;
   }
 
-  public changeNetwork = (type: NetworkType, port?: number) => {
-    const firebaseConfig = Const.FIREBASE_CONFIG[type];
-    if (!firebase.apps.includes[type]) {
-      this.app = firebase.initializeApp(firebaseConfig, type);
-    } else {
+  public changeNetwork = (type: NetworkType) => {
+    this.ainJs.setProvider(Connect.getProviderUrl(type));
+    if (this.fbMode) {
       this.app = firebase.app(type);
     }
-    this.ainJs.setProvider(Connect.getProviderUrl(type));
   }
 
   public sendTransaction = async (txInput: TransactionInput) => {
