@@ -9,7 +9,7 @@ export class CustomError extends Error {
   static MESSAGE = {
     0: 'success',
     1: 'It is invalid Parameter',
-    2: 'It falied to call method',
+    2: 'It failed to call method',
     500: 'It is Unexpected Error',
   };
 

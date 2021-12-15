@@ -5,74 +5,115 @@ import 'firebase/functions';
 import 'firebase/storage';
 import { TransactionInput } from '@ainblockchain/ain-js/lib/types';
 import { mnemonicToSeedSync } from 'bip39';
-import * as ainUtil from '@ainblockchain/ain-util';
+import {
+  toChecksumAddress,
+  pubToAddress,
+} from '@ainblockchain/ain-util';
 import AinJS from '@ainblockchain/ain-js';
 import HDKey from 'hdkey';
 import * as Const from '../common/constants';
 import { NetworkType, EventCallback } from '../common/types';
 
 export default class Connect {
+  private _initialized: boolean = false;
   private app: firebase.app.App;
   private wallet: HDKey;
   private mnemonic: string;
   private privateKey: string;
   private address: string;
   private ainJs: AinJS;
+  private fbMode: boolean; // XXX: temporary property
 
-  static getWalletInfo(mnemonic: string) {
+  static getWalletInfo(mnemonic: string, index: number) {
     const key = HDKey.fromMasterSeed(mnemonicToSeedSync(mnemonic));
-    const wallet = key.derive("m/44'/412'/0'/0/0"); /* default wallet address for AIN */
+    const wallet = key.derive(`m/44'/412'/0'/0/${index}`);
     return {
       wallet,
       privateKey: `0x${wallet.privateKey.toString('hex')}`,
-      address: ainUtil.toChecksumAddress(`0x${ainUtil.pubToAddress(wallet.publicKey, true).toString('hex')}`),
+      address: toChecksumAddress(
+        `0x${pubToAddress(wallet.publicKey, true).toString('hex')}`,
+      ),
     };
   }
 
-  static getProviderUrl(type: NetworkType, port?: number): string {
-    const portStr = port ? `:${port}` : '';
+  static getProviderUrl(type: NetworkType): string {
     switch (type) {
       case NetworkType.MAINNET:
-      case NetworkType.DEVNET:
       case NetworkType.TESTNET:
+      case NetworkType.DEVNET:
         return Const.PROVIDER_URL[type];
-      case NetworkType.LOCAL:
       default:
-        return `${Const.PROVIDER_URL[type]}${portStr}`;
+        throw new Error(`Wrong network type: ${type}`);
     }
   }
 
-  constructor(type: NetworkType, mnemonic: string, port?: number) {
-    const firebaseConfig = Const.FIREBASE_CONFIG[type];
-    if (!firebase.apps.length) {
-      this.app = firebase.initializeApp(firebaseConfig);
-    } else {
-      this.app = firebase.app();
-    }
-
-    this.ainJs = new AinJS(Connect.getProviderUrl(type, port));
-    const walletInfo = Connect.getWalletInfo(mnemonic);
+  constructor(
+    type: NetworkType,
+    mnemonic: string,
+    useFirebase?: boolean, // XXX: temporary param
+  ) {
+    this.ainJs = new AinJS(Connect.getProviderUrl(type));
+    const walletInfo = Connect.getWalletInfo(mnemonic, 0);
     this.wallet = walletInfo.wallet;
     this.mnemonic = mnemonic;
     this.privateKey = walletInfo.privateKey;
     this.address = walletInfo.address;
+    this.fbMode = useFirebase || false;
+    if (useFirebase) {
+      for (const networkType of Object.values(NetworkType)) {
+        const firebaseConfig = Const.FIREBASE_CONFIG[networkType];
+        firebase.initializeApp(firebaseConfig, networkType);
+      }
+      this.app = firebase.app(type);
+    }
 
     this.ainJs.wallet.addFromHDWallet(mnemonic);
     this.ainJs.wallet.setDefaultAccount(this.address);
+    this._initialized = true;
+  }
+
+  public changeAccount = (index: number) => {
+    if (!this._initialized) {
+      throw new Error('Connect SDK not initialized');
+    }
+    const walletInfo = Connect.getWalletInfo(this.mnemonic, index);
+    this.wallet = walletInfo.wallet;
+    this.privateKey = walletInfo.privateKey;
+    this.address = walletInfo.address;
+  }
+
+  public changeNetwork = (type: NetworkType) => {
+    this.ainJs.setProvider(Connect.getProviderUrl(type));
+    if (this.fbMode) {
+      this.app = firebase.app(type);
+    }
   }
 
   public sendTransaction = async (txInput: TransactionInput) => {
     const txBody = await this.ainJs.buildTransactionBody(txInput);
-    const signature = this.ainJs.wallet.signTransaction(txBody);
+    if (this.fbMode) {
+      const signature = this.ainJs.wallet.signTransaction(txBody);
 
-    const result = await this.app.functions()
-      .httpsCallable('sendSignedTransaction')({
-        signature,
-        tx_body: txBody,
-      });
+      const result = await this.app.functions()
+        .httpsCallable('sendSignedTransaction')({
+          signature,
+          tx_body: txBody,
+        });
 
-    if (result.data && result.data.error_message) {
-      throw Error(`[code:${result.data.code}]: ${result.data.error_message}`);
+      if (result.data && result.data.error_message) {
+        throw Error(`[code:${result.data.code}]: ${result.data.error_message}`);
+      }
+      return result;
+    } else {
+      const result = await this.ainJs.sendTransaction(txInput);
+      if (result.code) {
+        /* result: { code: 'ERROR_CODE', message: 'ERROR_MESSAGE' } */
+        throw Error(`[code:${result.code}]: ${result.message}`);
+      } else {
+        /* result: { result: any, tx_hash: 'TX_HASH' } */
+        // TODO: transfer TX 같은 경우, balance 부족으로 실패해도 tx hash가 생성된다.
+        return result;
+      }
     }
   }
 
@@ -80,16 +121,33 @@ export default class Connect {
     path: string,
     callback: EventCallback,
   ) => {
-    // TODO: 처리된 event들에 대해선 callback 발생하지 않도록
-    this.app.database().ref(path).on('child_added',
-      async (snap) => {
-        await callback(`${path}/${snap.key}`, snap.val());
-      });
+    if (this.fbMode) {
+      // TODO: 처리된 event들에 대해선 callback 발생하지 않도록
+      this.app.database().ref(path).on('child_added',
+        async (snap) => {
+          await callback(`${path}/${snap.key}`, snap.val());
+        });
+    } else {
+      // TODO
+    }
   }
 
   public get = async (path: string) => {
-    const snap = await this.app.database().ref(path).once('value');
-    return snap.val();
+    if (this.fbMode) {
+      const snap = await this.app.database().ref(path).once('value');
+      return snap.val();
+    } else {
+      const res = await this.ainJs.db.ref(path).getValue();
+      return res.result;
+    }
+  }
+
+  public set = async (path: string, value: any) => {
+    if (this.fbMode) {
+      await this.app.database().ref(path).set(value);
+    } else {
+      await this.ainJs.db.ref(path).setValue({ value });
+    }
   }
 
   public getWallet = () => this.wallet;
