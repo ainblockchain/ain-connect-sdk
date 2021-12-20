@@ -15,7 +15,6 @@ import * as Const from '../common/constants';
 import { NetworkType, EventCallback } from '../common/types';
 
 export default class Connect {
-  private _initialized: boolean = false;
   private app: firebase.app.App;
   private wallet: HDKey;
   private mnemonic: string;
@@ -53,39 +52,33 @@ export default class Connect {
     useFirebase?: boolean, // XXX: temporary param
   ) {
     this.ainJs = new AinJS(Connect.getProviderUrl(type));
-    const walletInfo = Connect.getWalletInfo(mnemonic, 0);
-    this.wallet = walletInfo.wallet;
     this.mnemonic = mnemonic;
-    this.privateKey = walletInfo.privateKey;
-    this.address = walletInfo.address;
     this.fbMode = useFirebase || false;
-    if (useFirebase) {
-      for (const networkType of Object.values(NetworkType)) {
-        const firebaseConfig = Const.FIREBASE_CONFIG[networkType];
-        firebase.initializeApp(firebaseConfig, networkType);
-      }
-      this.app = firebase.app(type);
-    }
-
     this.ainJs.wallet.addFromHDWallet(mnemonic);
-    this.ainJs.wallet.setDefaultAccount(this.address);
-    this._initialized = true;
+
+    this.changeNetwork(type);
+    this.changeAccount(0);
   }
 
   public changeAccount = (index: number) => {
-    if (!this._initialized) {
-      throw new Error('Connect SDK not initialized');
-    }
     const walletInfo = Connect.getWalletInfo(this.mnemonic, index);
     this.wallet = walletInfo.wallet;
     this.privateKey = walletInfo.privateKey;
     this.address = walletInfo.address;
+
+    this.ainJs.wallet.setDefaultAccount(this.address);
   }
 
   public changeNetwork = (type: NetworkType) => {
     this.ainJs.setProvider(Connect.getProviderUrl(type));
     if (this.fbMode) {
-      this.app = firebase.app(type);
+      const apps = firebase.apps.map((value) => value.name);
+      if (apps.includes(type)) {
+        this.app = firebase.app(type);
+      } else {
+        const fbConfig = Const.FIREBASE_CONFIG[type];
+        this.app = firebase.initializeApp(fbConfig, type);
+      }
     }
   }
 
