@@ -83,8 +83,9 @@ export default class Connect {
   }
 
   public sendTransaction = async (txInput: TransactionInput) => {
-    const txBody = await this.ainJs.buildTransactionBody(txInput);
     if (this.fbMode) {
+      const fbTxInput: TransactionInput = { ...txInput, nonce: -1 };
+      const txBody = await this.ainJs.buildTransactionBody(fbTxInput);
       const signature = this.ainJs.wallet.signTransaction(txBody);
 
       const result = await this.app.functions()
