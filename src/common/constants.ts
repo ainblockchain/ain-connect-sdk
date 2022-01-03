@@ -1,7 +1,7 @@
 import { NetworkType } from './types';
 
 export const PROVIDER_URL: {[key: string]: string} = {
-  [NetworkType.MAINNET]: 'https://testnet-api.ainetwork.ai', // FIXME
+  [NetworkType.MAINNET]: 'https://mainnet-api.ainetwork.ai',
   [NetworkType.TESTNET]: 'https://testnet-api.ainetwork.ai',
   [NetworkType.DEVNET]: 'https://dev-api.ainetwork.ai',
 };

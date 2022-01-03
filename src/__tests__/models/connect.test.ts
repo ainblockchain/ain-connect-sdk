@@ -6,10 +6,40 @@ const TEST_MNEMONIC = 'online congress divert fee canal snake make almost tube r
 describe('connect', () => {
   it('init', () => expect(true).toEqual(true));
 
-  it('change network for firebase connect', () => {
-    const connect = new Connect(NetworkType.MAINNET, TEST_MNEMONIC, true);
-    expect(connect.getApp().name).toEqual(NetworkType.MAINNET);
-    connect.changeNetwork(NetworkType.TESTNET);
-    expect(connect.getApp().name).toEqual(NetworkType.TESTNET);
+  describe('FIREBASE TEST', () => {
+    let connect: Connect;
+    beforeAll(() => {
+      connect = new Connect(NetworkType.DEVNET, TEST_MNEMONIC, true);
+    });
+
+    it('change network for firebase connect', () => {
+      connect.changeNetwork(NetworkType.TESTNET);
+      expect(connect.getApp().name).toEqual(NetworkType.TESTNET);
+    });
+  });
+
+  describe('BLOCKCHAIN TEST', () => {
+    let connect: Connect;
+    beforeAll(() => {
+      connect = new Connect(NetworkType.TESTNET, TEST_MNEMONIC);
+    });
+
+    it('get value from non-exist path', async () => {
+      try {
+        const res = await connect.get('/this/is/not/exist/path');
+        expect(res).toBeNull();
+      } catch (e) {
+        console.error(e);
+      }
+    });
+
+    it('get value from exist path', async () => {
+      try {
+        const res = await connect.get('/token');
+        expect(res).not.toBeNull();
+      } catch (e) {
+        console.error(e);
+      }
+    });
   });
 });
