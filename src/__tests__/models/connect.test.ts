@@ -29,7 +29,7 @@ describe('connect', () => {
         const res = await connect.get('/this/is/not/exist/path');
         expect(res).toBeNull();
       } catch (e) {
-        console.error(e);
+        fail(e);
       }
     });
 
@@ -38,7 +38,7 @@ describe('connect', () => {
         const res = await connect.get('/token');
         expect(res).not.toBeNull();
       } catch (e) {
-        console.error(e);
+        fail(e);
       }
     });
   });
