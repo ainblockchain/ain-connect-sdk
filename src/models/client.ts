@@ -28,6 +28,7 @@ export default class Client {
     address: string,
     value: Types.SendRequestValue,
   ): Promise<string> => {
+    const timestamp = Date.now();
     const requestId = getRandomRequestId();
     const txInput: TransactionInput = {
       operation: {
@@ -38,9 +39,11 @@ export default class Client {
         value: {
           ...value,
           userAinAddress: this.connect.getAddress(),
+          createdAt: timestamp,
         },
       },
       address: this.connect.getAddress(),
+      timestamp,
     };
     await this.connect.sendTransaction(txInput);
     return requestId;
