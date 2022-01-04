@@ -1,6 +1,10 @@
 export const WORKER_LIST_PATH = '/worker_info';
 export const getWorkerId = (name: string, address: string) => `${name}@${address}`;
 
+export const getWorkerListWithPrefixPath = (
+  appName: string,
+) => `/apps/${appName}${WORKER_LIST_PATH}`;
+
 export const getWorkerStatusPath = (
   name: string,
   address: string,
@@ -23,6 +27,13 @@ export const getWorkerStatusWithPrefixPath = (
   name: string,
   address: string,
 ) => `/apps/${appName}${getWorkerStatusPath(name, address)}`;
+
+export const getContainerStatusWithPrefixPath = (
+  appName: string,
+  name: string,
+  address: string,
+  containerId: string,
+) => `/apps/${appName}${getContainerStatusPath(name, address, containerId)}`;
 
 export const getWorkerRequestQueuePath = (
   name: string,

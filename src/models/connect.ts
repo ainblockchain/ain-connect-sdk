@@ -153,4 +153,5 @@ export default class Connect {
   public getAddress = () => this.address;
   public getAinJs = () => this.ainJs;
   public getApp = () => this.app;
+  public isFirebase = () => this.fbMode;
 }

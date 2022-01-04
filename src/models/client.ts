@@ -57,7 +57,10 @@ export default class Client {
   public getWorkerList = async (
   ): Promise<Types.WorkerInfo> => {
     // TODO: worker filter option?
-    const res = await this.connect.get(Path.WORKER_LIST_PATH);
+    const path = this.connect.isFirebase()
+      ? Path.WORKER_LIST_PATH
+      : Path.getWorkerListWithPrefixPath(this.appName);
+    const res = await this.connect.get(path);
     return res;
   }
 
@@ -65,7 +68,9 @@ export default class Client {
     name: string,
     address: string,
   ): Promise<Types.WorkerStatusParams> => {
-    const path = Path.getWorkerStatusPath(name, address);
+    const path = this.connect.isFirebase()
+      ? Path.getWorkerStatusPath(name, address)
+      : Path.getWorkerStatusWithPrefixPath(this.appName, name, address);
     const res = await this.connect.get(path);
     return res;
   }
@@ -75,7 +80,9 @@ export default class Client {
     address: string,
     containerId: string,
   ): Promise<Types.WorkerStatusParams> => {
-    const path = Path.getContainerStatusPath(name, address, containerId);
+    const path = this.connect.isFirebase()
+      ? Path.getContainerStatusPath(name, address, containerId)
+      : Path.getContainerStatusWithPrefixPath(this.appName, name, address, containerId);
     const res = await this.connect.get(path);
     return res;
   }

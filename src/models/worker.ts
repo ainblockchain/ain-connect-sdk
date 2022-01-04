@@ -80,8 +80,10 @@ export default class Worker {
     const path = Path.getWorkerRequestQueuePath(this.name, this.connect.getAddress());
     this.connect.addEventListener(path, async (ref, value) => {
       const requestId = ref.split('/').reverse()[0];
-      const responsePath = `${Path.getUserResponsesPath(value.userAinAddress)}/${requestId}`;
-      const responseData = await this.connect.get(responsePath);
+      const responsePath = this.connect.isFirebase()
+        ? Path.getUserResponsesPath(value.userAinAddress)
+        : Path.getUserResponsesWithPrefixPath(this.appName, value.userAinAddress);
+      const responseData = await this.connect.get(`${responsePath}/${requestId}`);
       if (!responseData) {
         callback(ref, value);
       }
@@ -111,11 +113,11 @@ export default class Worker {
 
   public getRequestQueue = async (
   ) => {
-    const queue = await this.connect.get(
-      Path.getWorkerRequestQueuePathWithPrefixPath(
-        this.appName, this.name, this.connect.getAddress(),
-      ),
-    );
+    const address = this.connect.getAddress();
+    const path = this.connect.isFirebase()
+      ? Path.getWorkerRequestQueuePath(this.name, address)
+      : Path.getWorkerRequestQueuePathWithPrefixPath(this.appName, this.name, address);
+    const queue = await this.connect.get(path);
 
     return queue;
   }
