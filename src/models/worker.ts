@@ -100,8 +100,8 @@ export default class Worker {
     requestAddress: string,
     value: Types.SendResponseValue,
   ) => {
-    const txInput: TransactionInput = this.connect.isFirebase() ?
-      {
+    const txInput: TransactionInput = this.connect.isFirebase()
+      ? {
         operation: {
           type: 'SET_VALUE',
           ref: `${Path.getUserResponsesWithPrefixPath(
@@ -111,10 +111,8 @@ export default class Worker {
             ...value,
             workerId: `${this.name}@${this.connect.getAddress()}`,
           },
-        }
-      }
-      :
-      {
+        },
+      } : {
         operation: {
           type: 'SET',
           op_list: [{
