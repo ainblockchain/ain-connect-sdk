@@ -100,6 +100,7 @@ export default class Worker {
     requestAddress: string,
     value: Types.SendResponseValue,
   ) => {
+    const timestamp = Date.now();
     const txInput: TransactionInput = this.connect.isFirebase()
       ? {
         operation: {
@@ -110,8 +111,10 @@ export default class Worker {
           value: {
             ...value,
             workerId: `${this.name}@${this.connect.getAddress()}`,
+            createdAt: timestamp,
           },
         },
+        address: this.connect.getAddress(),
       } : {
         operation: {
           type: 'SET',
@@ -123,6 +126,7 @@ export default class Worker {
             value: {
               ...value,
               workerId: `${this.name}@${this.connect.getAddress()}`,
+              createdAt: timestamp,
             },
           }, {
             type: 'SET_VALUE',
