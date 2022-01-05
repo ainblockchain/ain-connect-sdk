@@ -60,6 +60,7 @@ export default class Worker {
   public updateStatus = async (
     status: Types.WorkerStatusParams,
   ) => {
+    const timestamp = Date.now();
     const address = this.connect.getAddress();
     const txInput: TransactionInput = {
       operation: {
@@ -67,9 +68,13 @@ export default class Worker {
         ref: Path.getWorkerStatusWithPrefixPath(
           this.appName, this.name, address,
         ),
-        value: status,
+        value: {
+          ...status,
+          updatedAt: timestamp,
+        },
       },
       address,
+      timestamp,
     };
     await this.connect.sendTransaction(txInput);
   }
