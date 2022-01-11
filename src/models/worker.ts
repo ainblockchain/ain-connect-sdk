@@ -60,6 +60,7 @@ export default class Worker {
   public updateStatus = async (
     status: Types.WorkerStatusParams,
   ) => {
+    const timestamp = Date.now();
     const address = this.connect.getAddress();
     const txInput: TransactionInput = {
       operation: {
@@ -67,9 +68,13 @@ export default class Worker {
         ref: Path.getWorkerStatusWithPrefixPath(
           this.appName, this.name, address,
         ),
-        value: status,
+        value: {
+          ...status,
+          updatedAt: timestamp,
+        },
       },
       address,
+      timestamp,
     };
     await this.connect.sendTransaction(txInput);
   }
@@ -95,19 +100,44 @@ export default class Worker {
     requestAddress: string,
     value: Types.SendResponseValue,
   ) => {
-    const txInput: TransactionInput = {
-      operation: {
-        type: 'SET_VALUE',
-        ref: `${Path.getUserResponsesWithPrefixPath(
-          this.appName, requestAddress,
-        )}/${requestId}`,
-        value: {
-          ...value,
-          workerId: `${this.name}@${this.connect.getAddress()}`,
+    const timestamp = Date.now();
+    const txInput: TransactionInput = this.connect.isFirebase()
+      ? {
+        operation: {
+          type: 'SET_VALUE',
+          ref: `${Path.getUserResponsesWithPrefixPath(
+            this.appName, requestAddress,
+          )}/${requestId}`,
+          value: {
+            ...value,
+            workerId: `${this.name}@${this.connect.getAddress()}`,
+            createdAt: timestamp,
+          },
         },
-      },
-      address: this.connect.getAddress(),
-    };
+        address: this.connect.getAddress(),
+      } : {
+        operation: {
+          type: 'SET',
+          op_list: [{
+            type: 'SET_VALUE',
+            ref: `${Path.getUserResponsesWithPrefixPath(
+              this.appName, requestAddress,
+            )}/${requestId}`,
+            value: {
+              ...value,
+              workerId: `${this.name}@${this.connect.getAddress()}`,
+              createdAt: timestamp,
+            },
+          }, {
+            type: 'SET_VALUE',
+            ref: `${Path.getWorkerRequestQueueWithPrefixPath(
+              this.appName, this.name, requestAddress,
+            )}/${requestId}`,
+            value: null,
+          }],
+        },
+        address: this.connect.getAddress(),
+      };
     await this.connect.sendTransaction(txInput);
   }
 
@@ -116,7 +146,7 @@ export default class Worker {
     const address = this.connect.getAddress();
     const path = this.connect.isFirebase()
       ? Path.getWorkerRequestQueuePath(this.name, address)
-      : Path.getWorkerRequestQueuePathWithPrefixPath(this.appName, this.name, address);
+      : Path.getWorkerRequestQueueWithPrefixPath(this.appName, this.name, address);
     const queue = await this.connect.get(path);
 
     return queue;

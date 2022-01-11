@@ -33,7 +33,7 @@ export default class Client {
     const txInput: TransactionInput = {
       operation: {
         type: 'SET_VALUE',
-        ref: `${Path.getWorkerRequestQueuePathWithPrefixPath(
+        ref: `${Path.getWorkerRequestQueueWithPrefixPath(
           this.appName, name, address,
         )}/${requestId}`,
         value: {

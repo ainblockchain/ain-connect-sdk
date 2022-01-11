@@ -40,7 +40,7 @@ export const getWorkerRequestQueuePath = (
   address: string,
 ) => `/worker_request_queue/${getWorkerId(name, address)}`;
 
-export const getWorkerRequestQueuePathWithPrefixPath = (
+export const getWorkerRequestQueueWithPrefixPath = (
   appName: string,
   name: string,
   address: string,
