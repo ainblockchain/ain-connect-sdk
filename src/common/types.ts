@@ -2,7 +2,7 @@ export enum NetworkType {
   MAINNET = 'MAINNET',
   TESTNET = 'TESTNET',
   DEVNET = 'DEVNET',
-  LOCAL = 'LOCAL'
+  CUSTOM = 'CUSTOM',
 }
 
 export type FirebaseConfig = {

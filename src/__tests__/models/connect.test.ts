@@ -6,18 +6,6 @@ const TEST_MNEMONIC = 'online congress divert fee canal snake make almost tube r
 describe('connect', () => {
   it('init', () => expect(true).toEqual(true));
 
-  describe('FIREBASE TEST', () => {
-    let connect: Connect;
-    beforeAll(() => {
-      connect = new Connect(NetworkType.DEVNET, TEST_MNEMONIC, true);
-    });
-
-    it('change network for firebase connect', () => {
-      connect.changeNetwork(NetworkType.TESTNET);
-      expect(connect.getApp().name).toEqual(NetworkType.TESTNET);
-    });
-  });
-
   describe('BLOCKCHAIN TEST', () => {
     let connect: Connect;
     beforeAll(() => {

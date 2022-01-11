@@ -1,6 +1,7 @@
 import * as https from 'https';
 import * as fs from 'fs';
 import * as GcloudStorage from '@google-cloud/storage';
+import firebase from 'firebase/app';
 import Connect from './connect';
 import * as Types from '../common/types';
 import * as Const from '../common/constants';
@@ -11,20 +12,24 @@ import * as Const from '../common/constants';
 
 export default class Storage {
   private connect: Connect;
-
+  private name: string;
+  private firebaseApp: firebase.app.App;
   private storageBucket: string;
 
-  private name: string;
-
   constructor(
-    type: Types.NetworkType,
+    network: Types.NetworkType | string,
     mnemonic: string,
     name: string,
-    useFirebase?: boolean,
   ) {
-    this.connect = new Connect(type, mnemonic, useFirebase);
+    this.connect = new Connect(network, mnemonic);
     this.name = name;
-    this.storageBucket = Const.FIREBASE_CONFIG[type].storageBucket;
+    if (network === Types.NetworkType.MAINNET
+      || network === Types.NetworkType.TESTNET
+      || network === Types.NetworkType.DEVNET) {
+      const config = Const.FIREBASE_CONFIG[network];
+      this.firebaseApp = firebase.initializeApp(config);
+      this.storageBucket = config.storageBucket;
+    }
   }
 
   /**
@@ -63,20 +68,20 @@ export default class Storage {
     const txBody = await this.connect.getAinJs().buildTransactionBody(txInput);
     const signature = this.connect.getAinJs().wallet.signTransaction(txBody);
 
-    const result = await this.connect.getApp().functions()
+    const result = await this.firebaseApp.functions()
       .httpsCallable('getWorkerAuthToken')({
         signature,
         tx_body: txBody,
       });
 
-    await this.connect.getApp().auth().signInWithCustomToken(result.data.customToken);
+    await this.firebaseApp.auth().signInWithCustomToken(result.data.customToken);
   }
 
   /**
    * download file on Firebase storage.
    */
   async downloadFile(downloadLink: string, savePath: string) {
-    const url = await this.connect.getApp().storage().ref(downloadLink).getDownloadURL();
+    const url = await this.firebaseApp.storage().ref(downloadLink).getDownloadURL();
     const file = fs.createWriteStream(savePath);
 
     return new Promise((resolve, reject) => {

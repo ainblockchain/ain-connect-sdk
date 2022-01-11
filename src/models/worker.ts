@@ -9,13 +9,12 @@ export default class Worker {
   private connect: Connect;
 
   constructor(
-    type: Types.NetworkType,
+    network: Types.NetworkType | string,
     mnemonic: string,
     name: string,
     appName: string,
-    useFirebase?: boolean,
   ) {
-    this.connect = new Connect(type, mnemonic, useFirebase);
+    this.connect = new Connect(network, mnemonic);
     this.name = name;
     this.appName = appName;
   }
@@ -27,7 +26,7 @@ export default class Worker {
     const txInput: TransactionInput = {
       operation: {
         type: 'SET_VALUE',
-        ref: Path.getWorkerRegisterWithPrefixPath(
+        ref: Path.getWorkerRegisterPath(
           this.appName, this.name, address,
         ),
         value: params,
@@ -45,7 +44,7 @@ export default class Worker {
     const txInput: TransactionInput = {
       operation: {
         type: 'SET_VALUE',
-        ref: Path.getWorkerStatusWithPrefixPath(
+        ref: Path.getWorkerStatusPath(
           this.appName, this.name, address,
         ),
         value: {
@@ -65,7 +64,7 @@ export default class Worker {
     const txInput: TransactionInput = {
       operation: {
         type: 'SET_VALUE',
-        ref: Path.getWorkerStatusWithPrefixPath(
+        ref: Path.getWorkerStatusPath(
           this.appName, this.name, address,
         ),
         value: {
@@ -82,12 +81,12 @@ export default class Worker {
   public listenRequestQueue = (
     callback: Types.RequestEventCallback,
   ) => {
-    const path = Path.getWorkerRequestQueuePath(this.name, this.connect.getAddress());
+    const path = Path.getWorkerRequestQueuePath(
+      this.appName, this.name, this.connect.getAddress(),
+    );
     this.connect.addEventListener(path, async (ref, value) => {
       const requestId = ref.split('/').reverse()[0];
-      const responsePath = this.connect.isFirebase()
-        ? Path.getUserResponsesPath(value.userAinAddress)
-        : Path.getUserResponsesWithPrefixPath(this.appName, value.userAinAddress);
+      const responsePath = Path.getUserResponsesPath(this.appName, value.userAinAddress);
       const responseData = await this.connect.get(`${responsePath}/${requestId}`);
       if (!responseData) {
         callback(ref, value);
@@ -101,11 +100,12 @@ export default class Worker {
     value: Types.SendResponseValue,
   ) => {
     const timestamp = Date.now();
-    const txInput: TransactionInput = this.connect.isFirebase()
-      ? {
-        operation: {
+    const txInput: TransactionInput = {
+      operation: {
+        type: 'SET',
+        op_list: [{
           type: 'SET_VALUE',
-          ref: `${Path.getUserResponsesWithPrefixPath(
+          ref: `${Path.getUserResponsesPath(
             this.appName, requestAddress,
           )}/${requestId}`,
           value: {
@@ -113,40 +113,25 @@ export default class Worker {
             workerId: `${this.name}@${this.connect.getAddress()}`,
             createdAt: timestamp,
           },
-        },
-        address: this.connect.getAddress(),
-      } : {
-        operation: {
-          type: 'SET',
-          op_list: [{
-            type: 'SET_VALUE',
-            ref: `${Path.getUserResponsesWithPrefixPath(
-              this.appName, requestAddress,
-            )}/${requestId}`,
-            value: {
-              ...value,
-              workerId: `${this.name}@${this.connect.getAddress()}`,
-              createdAt: timestamp,
-            },
-          }, {
-            type: 'SET_VALUE',
-            ref: `${Path.getWorkerRequestQueueWithPrefixPath(
-              this.appName, this.name, requestAddress,
-            )}/${requestId}`,
-            value: null,
-          }],
-        },
-        address: this.connect.getAddress(),
-      };
+        }, {
+          type: 'SET_VALUE',
+          ref: `${Path.getWorkerRequestQueuePath(
+            this.appName, this.name, requestAddress,
+          )}/${requestId}`,
+          value: null,
+        }],
+      },
+      address: this.connect.getAddress(),
+    };
     await this.connect.sendTransaction(txInput);
   }
 
   public getRequestQueue = async (
   ) => {
     const address = this.connect.getAddress();
-    const path = this.connect.isFirebase()
-      ? Path.getWorkerRequestQueuePath(this.name, address)
-      : Path.getWorkerRequestQueueWithPrefixPath(this.appName, this.name, address);
+    const path = Path.getWorkerRequestQueuePath(
+      this.appName, this.name, address,
+    );
     const queue = await this.connect.get(path);
 
     return queue;
