@@ -53,7 +53,7 @@ export type WorkerInfo = {
 export type WorkerStatusParams = {
   workerStatus: string;
   currentNumberOfContainer: number;
-  containerInfo: {
+  containerInfo?: {
     [containerId: string]: {
       status: string;
       serviceStatus?: string;

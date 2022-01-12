@@ -73,8 +73,8 @@ export default class Connect {
 
   public sendTransaction = async (txInput: TransactionInput) => {
     const result = await this.ainJs.sendTransaction(txInput);
-    if (result.code) {
-      /* result: { code: 'ERROR_CODE', message: 'ERROR_MESSAGE' } */
+    if (result.result && result.result.code) {
+      /* result: { result: { code: 'ERROR_CODE', message: 'ERROR_MESSAGE' } } */
       throw Error(`[code:${result.code}]: ${result.message}`);
     } else {
       /* result: { result: any, tx_hash: 'TX_HASH' } */
