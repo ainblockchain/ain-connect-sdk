@@ -59,6 +59,13 @@ export default class Worker {
   public updateStatus = async (
     status: Types.WorkerStatusParams,
   ) => {
+    if (status.containerInfo) {
+      if (Object.keys(status.containerInfo).length !== status.currentNumberOfContainer) {
+        throw new Error('Invalid status parameters');
+      }
+    } else if (status.currentNumberOfContainer !== 0) {
+      throw new Error('Invalid status parameters');
+    }
     const timestamp = Date.now();
     const address = this.connect.getAddress();
     const txInput: TransactionInput = {
