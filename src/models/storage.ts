@@ -2,6 +2,10 @@ import * as https from 'https';
 import * as fs from 'fs';
 import * as GcloudStorage from '@google-cloud/storage';
 import firebase from 'firebase/app';
+import 'firebase/auth';
+import 'firebase/functions';
+import 'firebase/storage';
+
 import Connect from './connect';
 import * as Types from '../common/types';
 import * as Const from '../common/constants';
