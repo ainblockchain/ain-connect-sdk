@@ -2,7 +2,7 @@ export enum NetworkType {
   MAINNET = 'MAINNET',
   TESTNET = 'TESTNET',
   DEVNET = 'DEVNET',
-  LOCAL = 'LOCAL'
+  CUSTOM = 'CUSTOM',
 }
 
 export type FirebaseConfig = {
@@ -53,7 +53,7 @@ export type WorkerInfo = {
 export type WorkerStatusParams = {
   workerStatus: string;
   currentNumberOfContainer: number;
-  containerInfo: {
+  containerInfo?: {
     [containerId: string]: {
       status: string;
       serviceStatus?: string;

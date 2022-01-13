@@ -1,56 +1,35 @@
-export const WORKER_LIST_PATH = '/worker_info';
 export const getWorkerId = (name: string, address: string) => `${name}@${address}`;
 
-export const getWorkerListWithPrefixPath = (
+export const getWorkerListPath = (
   appName: string,
-) => `/apps/${appName}${WORKER_LIST_PATH}`;
+) => `/apps/${appName}/worker_info`;
+
+export const getWorkerRegisterPath = (
+  appName: string,
+  name: string,
+  address: string,
+) => `${getWorkerListPath(appName)}/${getWorkerId(name, address)}`;
 
 export const getWorkerStatusPath = (
+  appName: string,
   name: string,
   address: string,
-) => `${WORKER_LIST_PATH}/${getWorkerId(name, address)}/status`;
+) => `${getWorkerRegisterPath(appName, name, address)}/status`;
 
 export const getContainerStatusPath = (
-  name: string,
-  address: string,
-  containerId: string,
-) => `${getWorkerStatusPath(name, address)}/containerStatus/${containerId}`;
-
-export const getWorkerRegisterWithPrefixPath = (
-  appName: string,
-  name: string,
-  address: string,
-) => `/apps/${appName}${WORKER_LIST_PATH}/${getWorkerId(name, address)}`;
-
-export const getWorkerStatusWithPrefixPath = (
-  appName: string,
-  name: string,
-  address: string,
-) => `/apps/${appName}${getWorkerStatusPath(name, address)}`;
-
-export const getContainerStatusWithPrefixPath = (
   appName: string,
   name: string,
   address: string,
   containerId: string,
-) => `/apps/${appName}${getContainerStatusPath(name, address, containerId)}`;
+) => `${getWorkerStatusPath(appName, name, address)}/containerStatus/${containerId}`;
 
 export const getWorkerRequestQueuePath = (
-  name: string,
-  address: string,
-) => `/worker_request_queue/${getWorkerId(name, address)}`;
-
-export const getWorkerRequestQueueWithPrefixPath = (
   appName: string,
   name: string,
   address: string,
-) => `/apps/${appName}${getWorkerRequestQueuePath(name, address)}`;
+) => `/apps/${appName}/worker_request_queue/${getWorkerId(name, address)}`;
 
 export const getUserResponsesPath = (
-  userAddress: string,
-) => `/user_responses/${userAddress}`;
-
-export const getUserResponsesWithPrefixPath = (
   appName: string,
   userAddress: string,
-) => `/apps/${appName}${getUserResponsesPath(userAddress)}`;
+) => `/apps/${appName}/user_responses/${userAddress}`;
