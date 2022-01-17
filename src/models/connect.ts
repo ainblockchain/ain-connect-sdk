@@ -1,4 +1,4 @@
-import { TransactionInput } from '@ainblockchain/ain-js/lib/types';
+import { GetOptions, TransactionInput } from '@ainblockchain/ain-js/lib/types';
 import { mnemonicToSeedSync } from 'bip39';
 import {
   toChecksumAddress,
@@ -90,8 +90,8 @@ export default class Connect {
     // TODO
   }
 
-  public get = async (path: string) => {
-    const res = await this.ainJs.db.ref(path).getValue();
+  public get = async (path: string, getOptions?: GetOptions) => {
+    const res = await this.ainJs.db.ref().getValue(path, getOptions);
     if (res) {
       return res;
     }
