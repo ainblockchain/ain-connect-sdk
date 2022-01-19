@@ -87,6 +87,7 @@ export default class Worker {
 
   public listenRequestQueue = (
     callback: Types.RequestEventCallback,
+    getOptions?: GetOptions,
   ) => {
     const path = Path.getWorkerRequestQueuePath(
       this.appName, this.name, this.connect.getAddress(),
@@ -94,7 +95,7 @@ export default class Worker {
     this.connect.addEventListener(path, async (ref, value) => {
       const requestId = ref.split('/').reverse()[0];
       const responsePath = Path.getUserResponsesPath(this.appName, value.userAinAddress);
-      const responseData = await this.connect.get(`${responsePath}/${requestId}`);
+      const responseData = await this.connect.get(`${responsePath}/${requestId}`, getOptions);
       if (!responseData) {
         callback(ref, value);
       }

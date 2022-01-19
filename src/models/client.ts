@@ -1,4 +1,4 @@
-import { TransactionInput } from '@ainblockchain/ain-js/lib/types';
+import { GetOptions, TransactionInput } from '@ainblockchain/ain-js/lib/types';
 import { customAlphabet } from 'nanoid';
 import Connect from './connect';
 import * as Types from '../common/types';
@@ -57,19 +57,21 @@ export default class Client {
   }
 
   public getWorkerList = async (
+    getOptions?: GetOptions,
   ): Promise<Types.WorkerInfo> => {
     // TODO: worker filter option?
     const path = Path.getWorkerListPath(this.appName);
-    const res = await this.connect.get(path);
+    const res = await this.connect.get(path, getOptions);
     return res;
   }
 
   public getWorkerStatus = async (
     name: string,
     address: string,
+    getOptions?: GetOptions,
   ): Promise<Types.WorkerStatusParams> => {
     const path = Path.getWorkerStatusPath(this.appName, name, address);
-    const res = await this.connect.get(path);
+    const res = await this.connect.get(path, getOptions);
     return res;
   }
 
@@ -77,9 +79,10 @@ export default class Client {
     name: string,
     address: string,
     containerId: string,
+    getOptions?: GetOptions,
   ): Promise<Types.WorkerStatusParams> => {
     const path = Path.getContainerStatusPath(this.appName, name, address, containerId);
-    const res = await this.connect.get(path);
+    const res = await this.connect.get(path, getOptions);
     return res;
   }
 
