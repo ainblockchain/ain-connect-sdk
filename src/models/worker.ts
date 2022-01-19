@@ -1,4 +1,4 @@
-import { TransactionInput } from '@ainblockchain/ain-js/lib/types';
+import { GetOptions, TransactionInput } from '@ainblockchain/ain-js/lib/types';
 import Connect from './connect';
 import * as Types from '../common/types';
 import * as Path from '../common/path';
@@ -134,12 +134,13 @@ export default class Worker {
   }
 
   public getRequestQueue = async (
+    getOptions?: GetOptions,
   ) => {
     const address = this.connect.getAddress();
     const path = Path.getWorkerRequestQueuePath(
       this.appName, this.name, address,
     );
-    const queue = await this.connect.get(path);
+    const queue = await this.connect.get(path, getOptions);
 
     return queue;
   }
