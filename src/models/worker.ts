@@ -22,6 +22,7 @@ export default class Worker {
   public register = async (
     params: Types.WorkerRegisterParams,
   ) => {
+    const timestamp = Date.now();
     const address = this.connect.getAddress();
     const txInput: TransactionInput = {
       operation: {
@@ -29,17 +30,19 @@ export default class Worker {
         ref: Path.getWorkerRegisterPath(
           this.appName, this.name, address,
         ),
-        value: params,
+        value: {
+          ...params,
+          createdAt: timestamp,
+        },
       },
       address,
+      timestamp,
     };
     await this.connect.sendTransaction(txInput);
   }
 
   public terminate = async () => {
-    /**
-     * @TODO It must be modified when migrating to the blockchain
-     */
+    const timestamp = Date.now();
     const address = this.connect.getAddress();
     const txInput: TransactionInput = {
       operation: {
@@ -49,9 +52,11 @@ export default class Worker {
         ),
         value: {
           workerStatus: 'terminated',
+          updatedAt: timestamp,
         },
       },
       address,
+      timestamp,
     };
     await this.connect.sendTransaction(txInput);
   }
