@@ -1,4 +1,4 @@
-import { TransactionInput } from '@ainblockchain/ain-js/lib/types';
+import { GetOptions, TransactionInput } from '@ainblockchain/ain-js/lib/types';
 import Connect from './connect';
 import * as Types from '../common/types';
 import * as Path from '../common/path';
@@ -22,6 +22,7 @@ export default class Worker {
   public register = async (
     params: Types.WorkerRegisterParams,
   ) => {
+    const timestamp = Date.now();
     const address = this.connect.getAddress();
     const txInput: TransactionInput = {
       operation: {
@@ -29,17 +30,19 @@ export default class Worker {
         ref: Path.getWorkerRegisterPath(
           this.appName, this.name, address,
         ),
-        value: params,
+        value: {
+          ...params,
+          createdAt: timestamp,
+        },
       },
       address,
+      timestamp,
     };
     await this.connect.sendTransaction(txInput);
   }
 
   public terminate = async () => {
-    /**
-     * @TODO It must be modified when migrating to the blockchain
-     */
+    const timestamp = Date.now();
     const address = this.connect.getAddress();
     const txInput: TransactionInput = {
       operation: {
@@ -49,9 +52,11 @@ export default class Worker {
         ),
         value: {
           workerStatus: 'terminated',
+          updatedAt: timestamp,
         },
       },
       address,
+      timestamp,
     };
     await this.connect.sendTransaction(txInput);
   }
@@ -87,6 +92,7 @@ export default class Worker {
 
   public listenRequestQueue = (
     callback: Types.RequestEventCallback,
+    getOptions?: GetOptions,
   ) => {
     const path = Path.getWorkerRequestQueuePath(
       this.appName, this.name, this.connect.getAddress(),
@@ -94,7 +100,7 @@ export default class Worker {
     this.connect.addEventListener(path, async (ref, value) => {
       const requestId = ref.split('/').reverse()[0];
       const responsePath = Path.getUserResponsesPath(this.appName, value.userAinAddress);
-      const responseData = await this.connect.get(`${responsePath}/${requestId}`);
+      const responseData = await this.connect.get(`${responsePath}/${requestId}`, getOptions);
       if (!responseData) {
         callback(ref, value);
       }
@@ -134,12 +140,13 @@ export default class Worker {
   }
 
   public getRequestQueue = async (
+    getOptions?: GetOptions,
   ) => {
     const address = this.connect.getAddress();
     const path = Path.getWorkerRequestQueuePath(
       this.appName, this.name, address,
     );
-    const queue = await this.connect.get(path);
+    const queue = await this.connect.get(path, getOptions);
 
     return queue;
   }
