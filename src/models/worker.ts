@@ -111,7 +111,7 @@ export default class Worker {
     requestId: string,
     requestAddress: string,
     value: Types.SendResponseValue,
-  ) => {
+  ): Promise<any> => {
     const timestamp = Date.now();
     const txInput: TransactionInput = {
       operation: {
@@ -136,7 +136,8 @@ export default class Worker {
       },
       address: this.connect.getAddress(),
     };
-    await this.connect.sendTransaction(txInput);
+    const res = await this.connect.sendTransaction(txInput);
+    return res;
   }
 
   public getRequestQueue = async (
