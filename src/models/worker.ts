@@ -111,7 +111,7 @@ export default class Worker {
     requestId: string,
     requestAddress: string,
     value: Types.SendResponseValue,
-  ): Promise<any> => {
+  ) => {
     const timestamp = Date.now();
     const txInput: TransactionInput = {
       operation: {
