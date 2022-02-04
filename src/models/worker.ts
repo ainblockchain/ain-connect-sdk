@@ -136,8 +136,7 @@ export default class Worker {
       },
       address: this.connect.getAddress(),
     };
-    const res = await this.connect.sendTransaction(txInput);
-    return res;
+    await this.connect.sendTransaction(txInput);
   }
 
   public getRequestQueue = async (

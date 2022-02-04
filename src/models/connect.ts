@@ -73,14 +73,22 @@ export default class Connect {
 
   public sendTransaction = async (txInput: TransactionInput) => {
     const res = await this.ainJs.sendTransaction(txInput);
-    if (res.result && res.result.code) {
-      /* res: { result: { code: 'ERROR_CODE', message: 'ERROR_MESSAGE' } } */
-      throw Error(`[code:${res.result.code}]: ${res.result.message}`);
-    } else {
-      /* res: { result: any, tx_hash: 'TX_HASH' } */
-      // TODO: transfer TX 같은 경우, balance 부족으로 실패해도 tx hash가 생성된다.
-      return res;
+    if (res.result) {
+      if (res.result.code) {
+        /* res: { result: { code: 'ERROR_CODE', message: 'ERROR_MESSAGE' } } */
+        throw Error(`[code:${res.result.code}]: ${res.result.message}`);
+      } else if (res.result.result_list) {
+        Object.values(res.result.result_list).forEach((val: any) => {
+          if (val.code) {
+            /* res: { result: { result_list: { 0: { ... } } } } */
+            throw Error(`[code:${val.code}]: ${val.message}`);
+          }
+        });
+      }
     }
+    /* res: { result: any, tx_hash: 'TX_HASH' } */
+    // TODO: transfer TX 같은 경우, balance 부족으로 실패해도 tx hash가 생성된다.
+    return res;
   }
 
   public addEventListener = (
