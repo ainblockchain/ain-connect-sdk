@@ -46,11 +46,25 @@ export default class Connect {
     }
   }
 
+  static getChainId(network: NetworkType | string): number {
+    switch (network) {
+      case NetworkType.MAINNET:
+        return 1;
+      case NetworkType.TESTNET:
+      case NetworkType.DEVNET:
+      default:
+        return 0;
+    }
+  }
+
   constructor(
     network: NetworkType | string,
     mnemonic: string,
   ) {
-    this.ainJs = new AinJS(Connect.getProviderUrl(network));
+    this.ainJs = new AinJS(
+      Connect.getProviderUrl(network),
+      Connect.getChainId(network),
+    );
     this.mnemonic = mnemonic;
     this.ainJs.wallet.addFromHDWallet(mnemonic);
 
@@ -68,7 +82,10 @@ export default class Connect {
   }
 
   public changeNetwork = (network: NetworkType | string) => {
-    this.ainJs.setProvider(Connect.getProviderUrl(network));
+    this.ainJs.setProvider(
+      Connect.getProviderUrl(network),
+      Connect.getChainId(network),
+    );
   }
 
   public sendTransaction = async (txInput: TransactionInput) => {
