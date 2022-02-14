@@ -139,6 +139,30 @@ export default class Worker {
     await this.connect.sendTransaction(txInput);
   }
 
+  public removeHandledRequest = async (
+    requestId: string,
+    requestAddress: string,
+  ): Promise<boolean> => {
+    const ref = Path.getUserResponsesPath(this.appName, requestAddress);
+    const response = await this.getConnect().get(`${ref}/${requestId}`, { is_global: true });
+    if (response) {
+      const txInput: TransactionInput = {
+        operation: {
+          type: 'SET_VALUE',
+          ref: `${Path.getWorkerRequestQueuePath(
+            this.appName,
+            this.name,
+            requestAddress,
+          )}/${requestId}`,
+          value: null,
+        },
+        address: this.connect.getAddress(),
+      };
+      await this.connect.sendTransaction(txInput);
+    }
+    return false;
+  }
+
   public getRequestQueue = async (
     getOptions?: GetOptions,
   ) => {
