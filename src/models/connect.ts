@@ -50,8 +50,9 @@ export default class Connect {
     switch (network) {
       case NetworkType.MAINNET:
         return 1;
-      case NetworkType.TESTNET:
       case NetworkType.DEVNET:
+        return 2;
+      case NetworkType.TESTNET:
       default:
         return 0;
     }
