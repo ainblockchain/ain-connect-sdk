@@ -90,7 +90,8 @@ export default class Connect {
   }
 
   public sendTransaction = async (txInput: TransactionInput) => {
-    const res = await this.ainJs.sendTransaction(txInput);
+    const nonceTxInput = { ...txInput, nonce: -1 };
+    const res = await this.ainJs.sendTransaction(nonceTxInput);
     if (res.result) {
       if (res.result.code) {
         /* res: { result: { code: 'ERROR_CODE', message: 'ERROR_MESSAGE' } } */

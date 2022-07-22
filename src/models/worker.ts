@@ -135,6 +135,7 @@ export default class Worker {
         }],
       },
       address: this.connect.getAddress(),
+      timestamp,
     };
     await this.connect.sendTransaction(txInput);
   }
@@ -143,6 +144,7 @@ export default class Worker {
     requestId: string,
     requestAddress: string,
   ): Promise<boolean> => {
+    const timestamp = Date.now();
     const ref = Path.getUserResponsesPath(this.appName, requestAddress);
     const response = await this.getConnect().get(`${ref}/${requestId}`, { is_global: true });
     if (response) {
@@ -157,6 +159,7 @@ export default class Worker {
           value: null,
         },
         address: this.connect.getAddress(),
+        timestamp,
       };
       await this.connect.sendTransaction(txInput);
     }
