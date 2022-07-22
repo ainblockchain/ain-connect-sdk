@@ -1,10 +1,9 @@
 import { NetworkType } from './types';
 
 export const PROVIDER_URL: {[key: string]: string} = {
-  [NetworkType.MAINNET]: '',
+  [NetworkType.MAINNET]: 'https://mainnet-api.ainetwork.ai',
   [NetworkType.TESTNET]: 'https://testnet-api.ainetwork.ai',
   [NetworkType.DEVNET]: 'https://dev-api.ainetwork.ai',
-  [NetworkType.LOCAL]: 'https://localhost',
 };
 
 export const FIREBASE_CONFIG: {[key: string]: any} = {
@@ -38,10 +37,9 @@ export const FIREBASE_CONFIG: {[key: string]: any} = {
     appId: '1:1045334268091:web:c0490dfa3e8057a078f19e',
     measurementId: 'G-MVG9QTFBG8',
   },
-  [NetworkType.LOCAL]: {},
 };
 
-// temporary
-export const MAINNET_FIREBASE_ENDPOINT = '';
+// FIXME: TEMPORARY
+export const MAINNET_FIREBASE_ENDPOINT = 'https://us-central1-gpt2-ainetwork-prod.cloudfunctions.net';
 export const TESTNET_FIREBASE_ENDPOINT = 'https://us-central1-gpt2-ainetwork-staging.cloudfunctions.net';
 export const DEVNET_FIREBASE_ENDPOINT = 'https://us-central1-gpt2-ainetwork.cloudfunctions.net';

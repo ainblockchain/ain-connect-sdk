@@ -1,43 +1,35 @@
-const PREFIX_PATH = '/apps/collaborative_ai';
-
-export const WORKER_LIST_PATH = '/worker_info';
 export const getWorkerId = (name: string, address: string) => `${name}@${address}`;
 
-export const getWorkerStatusPath = (
+export const getWorkerListPath = (
+  appName: string,
+) => `/apps/${appName}/worker_info`;
+
+export const getWorkerRegisterPath = (
+  appName: string,
   name: string,
   address: string,
-) => `${WORKER_LIST_PATH}/${getWorkerId(name, address)}/status`;
+) => `${getWorkerListPath(appName)}/${getWorkerId(name, address)}`;
+
+export const getWorkerStatusPath = (
+  appName: string,
+  name: string,
+  address: string,
+) => `${getWorkerRegisterPath(appName, name, address)}/status`;
 
 export const getContainerStatusPath = (
+  appName: string,
   name: string,
   address: string,
   containerId: string,
-) => `${getWorkerStatusPath(name, address)}/containerStatus/${containerId}`;
-
-export const getWorkerRegisterWithPrefixPath = (
-  name: string,
-  address: string,
-) => `${PREFIX_PATH}${WORKER_LIST_PATH}/${getWorkerId(name, address)}`;
-
-export const getWorkerStatusWithPrefixPath = (
-  name: string,
-  address: string,
-) => `${PREFIX_PATH}${getWorkerStatusPath(name, address)}`;
+) => `${getWorkerStatusPath(appName, name, address)}/containerStatus/${containerId}`;
 
 export const getWorkerRequestQueuePath = (
+  appName: string,
   name: string,
   address: string,
-) => `/worker_request_queue/${getWorkerId(name, address)}`;
-
-export const getWorkerRequestQueuePathWithPrefixPath = (
-  name: string,
-  address: string,
-) => `${PREFIX_PATH}${getWorkerRequestQueuePath(name, address)}`;
+) => `/apps/${appName}/worker_request_queue/${getWorkerId(name, address)}`;
 
 export const getUserResponsesPath = (
+  appName: string,
   userAddress: string,
-) => `/user_responses/${userAddress}`;
-
-export const getUserResponsesWithPrefixPath = (
-  userAddress: string,
-) => `${PREFIX_PATH}/user_responses/${userAddress}`;
+) => `/apps/${appName}/user_responses/${userAddress}`;

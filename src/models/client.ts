@@ -1,4 +1,4 @@
-import { TransactionInput } from '@ainblockchain/ain-js/lib/types';
+import { GetOptions, TransactionInput } from '@ainblockchain/ain-js/lib/types';
 import { customAlphabet } from 'nanoid';
 import Connect from './connect';
 import * as Types from '../common/types';
@@ -10,10 +10,16 @@ function getRandomRequestId() {
 }
 
 export default class Client {
+  private appName: string;
   private connect: Connect;
 
-  constructor(type: Types.NetworkType, mnemonic: string, port?: number) {
-    this.connect = new Connect(type, mnemonic, port);
+  constructor(
+    type: Types.NetworkType,
+    mnemonic: string,
+    appName: string,
+  ) {
+    this.connect = new Connect(type, mnemonic);
+    this.appName = appName;
   }
 
   public sendRequest = async (
@@ -21,17 +27,22 @@ export default class Client {
     address: string,
     value: Types.SendRequestValue,
   ): Promise<string> => {
+    const timestamp = Date.now();
     const requestId = getRandomRequestId();
     const txInput: TransactionInput = {
       operation: {
         type: 'SET_VALUE',
-        ref: `${Path.getWorkerRequestQueuePathWithPrefixPath(name, address)}/${requestId}`,
+        ref: `${Path.getWorkerRequestQueuePath(
+          this.appName, name, address,
+        )}/${requestId}`,
         value: {
           ...value,
           userAinAddress: this.connect.getAddress(),
+          createdAt: timestamp,
         },
       },
       address: this.connect.getAddress(),
+      timestamp,
     };
     await this.connect.sendTransaction(txInput);
     return requestId;
@@ -41,23 +52,26 @@ export default class Client {
     callback: Types.ResponseEventCallback,
   ) => {
     const address = this.connect.getAddress();
-    const path = Path.getUserResponsesPath(address);
+    const path = Path.getUserResponsesPath(this.appName, address);
     this.connect.addEventListener(path, callback);
   }
 
   public getWorkerList = async (
+    getOptions?: GetOptions,
   ): Promise<Types.WorkerInfo> => {
     // TODO: worker filter option?
-    const res = await this.connect.get(Path.WORKER_LIST_PATH);
+    const path = Path.getWorkerListPath(this.appName);
+    const res = await this.connect.get(path, getOptions);
     return res;
   }
 
   public getWorkerStatus = async (
     name: string,
     address: string,
+    getOptions?: GetOptions,
   ): Promise<Types.WorkerStatusParams> => {
-    const path = Path.getWorkerStatusPath(name, address);
-    const res = await this.connect.get(path);
+    const path = Path.getWorkerStatusPath(this.appName, name, address);
+    const res = await this.connect.get(path, getOptions);
     return res;
   }
 
@@ -65,9 +79,10 @@ export default class Client {
     name: string,
     address: string,
     containerId: string,
+    getOptions?: GetOptions,
   ): Promise<Types.WorkerStatusParams> => {
-    const path = Path.getContainerStatusPath(name, address, containerId);
-    const res = await this.connect.get(path);
+    const path = Path.getContainerStatusPath(this.appName, name, address, containerId);
+    const res = await this.connect.get(path, getOptions);
     return res;
   }
 

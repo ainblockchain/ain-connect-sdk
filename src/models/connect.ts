@@ -1,95 +1,131 @@
-import firebase from 'firebase/app';
-import 'firebase/auth';
-import 'firebase/database';
-import 'firebase/functions';
-import 'firebase/storage';
-import { TransactionInput } from '@ainblockchain/ain-js/lib/types';
+import { GetOptions, TransactionInput } from '@ainblockchain/ain-js/lib/types';
 import { mnemonicToSeedSync } from 'bip39';
-import * as ainUtil from '@ainblockchain/ain-util';
+import {
+  toChecksumAddress,
+  pubToAddress,
+} from '@ainblockchain/ain-util';
 import AinJS from '@ainblockchain/ain-js';
 import HDKey from 'hdkey';
+import validUrl from 'valid-url';
 import * as Const from '../common/constants';
 import { NetworkType, EventCallback } from '../common/types';
 
 export default class Connect {
-  private app: firebase.app.App;
   private wallet: HDKey;
   private mnemonic: string;
   private privateKey: string;
   private address: string;
   private ainJs: AinJS;
 
-  static getWalletInfo(mnemonic: string) {
+  static getWalletInfo(mnemonic: string, index: number) {
     const key = HDKey.fromMasterSeed(mnemonicToSeedSync(mnemonic));
-    const wallet = key.derive("m/44'/412'/0'/0/0"); /* default wallet address for AIN */
+    const wallet = key.derive(`m/44'/412'/0'/0/${index}`);
     return {
       wallet,
       privateKey: `0x${wallet.privateKey.toString('hex')}`,
-      address: ainUtil.toChecksumAddress(`0x${ainUtil.pubToAddress(wallet.publicKey, true).toString('hex')}`),
+      address: toChecksumAddress(
+        `0x${pubToAddress(wallet.publicKey, true).toString('hex')}`,
+      ),
     };
   }
 
-  static getProviderUrl(type: NetworkType, port?: number): string {
-    const portStr = port ? `:${port}` : '';
-    switch (type) {
+  static getProviderUrl(
+    network: NetworkType | string,
+  ): string {
+    switch (network) {
       case NetworkType.MAINNET:
-      case NetworkType.DEVNET:
       case NetworkType.TESTNET:
-        return Const.PROVIDER_URL[type];
-      case NetworkType.LOCAL:
+      case NetworkType.DEVNET:
+        return Const.PROVIDER_URL[network];
       default:
-        return `${Const.PROVIDER_URL[type]}${portStr}`;
+        if (validUrl.isUri(network)) {
+          // TODO: Can we check this is valid blockchain URL?
+          return network;
+        }
+        throw new Error(`Wrong network: ${network}`);
     }
   }
 
-  constructor(type: NetworkType, mnemonic: string, port?: number) {
-    const firebaseConfig = Const.FIREBASE_CONFIG[type];
-    if (!firebase.apps.length) {
-      this.app = firebase.initializeApp(firebaseConfig);
-    } else {
-      this.app = firebase.app();
+  static getChainId(network: NetworkType | string): number {
+    switch (network) {
+      case NetworkType.MAINNET:
+        return 1;
+      case NetworkType.DEVNET:
+        return 2;
+      case NetworkType.TESTNET:
+      default:
+        return 0;
     }
+  }
 
-    this.ainJs = new AinJS(Connect.getProviderUrl(type, port));
-    const walletInfo = Connect.getWalletInfo(mnemonic);
-    this.wallet = walletInfo.wallet;
+  constructor(
+    network: NetworkType | string,
+    mnemonic: string,
+  ) {
+    this.ainJs = new AinJS(
+      Connect.getProviderUrl(network),
+      Connect.getChainId(network),
+    );
     this.mnemonic = mnemonic;
+    this.ainJs.wallet.addFromHDWallet(mnemonic);
+
+    this.changeNetwork(network);
+    this.changeAccount(0);
+  }
+
+  public changeAccount = (index: number) => {
+    const walletInfo = Connect.getWalletInfo(this.mnemonic, index);
+    this.wallet = walletInfo.wallet;
     this.privateKey = walletInfo.privateKey;
     this.address = walletInfo.address;
 
-    this.ainJs.wallet.addFromHDWallet(mnemonic);
     this.ainJs.wallet.setDefaultAccount(this.address);
   }
 
+  public changeNetwork = (network: NetworkType | string) => {
+    this.ainJs.setProvider(
+      Connect.getProviderUrl(network),
+      Connect.getChainId(network),
+    );
+  }
+
   public sendTransaction = async (txInput: TransactionInput) => {
-    const txBody = await this.ainJs.buildTransactionBody(txInput);
-    const signature = this.ainJs.wallet.signTransaction(txBody);
-
-    const result = await this.app.functions()
-      .httpsCallable('sendSignedTransaction')({
-        signature,
-        tx_body: txBody,
-      });
-
-    if (result.data && result.data.error_message) {
-      throw Error(`[code:${result.data.code}]: ${result.data.error_message}`);
+    const res = await this.ainJs.sendTransaction(txInput);
+    if (res.result) {
+      if (res.result.code) {
+        /* res: { result: { code: 'ERROR_CODE', message: 'ERROR_MESSAGE' } } */
+        throw Error(`[code:${res.result.code}]: ${res.result.message}`);
+      } else if (res.result.result_list) {
+        Object.values(res.result.result_list).forEach((val: any) => {
+          if (val.code) {
+            /* res: { result: { result_list: { 0: { ... } } } } */
+            throw Error(`[code:${val.code}]: ${val.message}`);
+          }
+        });
+      }
     }
+    /* res: { result: any, tx_hash: 'TX_HASH' } */
+    // TODO: transfer TX 같은 경우, balance 부족으로 실패해도 tx hash가 생성된다.
+    return res;
   }
 
   public addEventListener = (
     path: string,
     callback: EventCallback,
   ) => {
-    // TODO: 처리된 event들에 대해선 callback 발생하지 않도록
-    this.app.database().ref(path).on('child_added',
-      async (snap) => {
-        await callback(`${path}/${snap.key}`, snap.val());
-      });
+    // TODO
   }
 
-  public get = async (path: string) => {
-    const snap = await this.app.database().ref(path).once('value');
-    return snap.val();
+  public get = async (path: string, getOptions?: GetOptions) => {
+    const res = await this.ainJs.db.ref().getValue(path, getOptions);
+    if (res) {
+      return res;
+    }
+    return null;
+  }
+
+  public set = async (path: string, value: any) => {
+    await this.ainJs.db.ref(path).setValue({ value });
   }
 
   public getWallet = () => this.wallet;
@@ -97,5 +133,4 @@ export default class Connect {
   public getPrivateKey = () => this.privateKey;
   public getAddress = () => this.address;
   public getAinJs = () => this.ainJs;
-  public getApp = () => this.app;
 }
