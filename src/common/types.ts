@@ -227,6 +227,7 @@ export type DeployForDockerParams = {
     [key: string]: string
   };
   command?: string[];
+  privileged?: boolean;
 }
 export type DeployForDockerReturn = {
   containerId: string;
